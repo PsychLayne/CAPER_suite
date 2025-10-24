@@ -344,7 +344,7 @@ Wine Version:          {system_info.get('wine_version', 'N/A')}
 
 """
 
-        for task_name in TASKS:
+        for task_name in self.TASKS:
             is_available = self.task_manager.check_task_availability(task_name)
             status = "✓" if is_available else "✗"
             info_content += f"{status} {task_name:<25} {'Ready' if is_available else 'Not Found'}\n"
