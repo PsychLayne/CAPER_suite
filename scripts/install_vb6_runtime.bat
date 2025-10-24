@@ -20,6 +20,9 @@ echo ===========================================================================
 echo.
 pause
 
+REM Change to the script's directory (important when running as Administrator)
+cd /d "%~dp0"
+
 REM Try to find Python
 echo Searching for Python...
 echo.
@@ -30,7 +33,8 @@ if %ERRORLEVEL% EQU 0 (
     echo Found Python Launcher (py)
     py --version
     echo.
-    py install_vb6_runtime.py
+    echo Running installer...
+    py "%~dp0install_vb6_runtime.py"
     goto :end
 )
 
@@ -41,7 +45,8 @@ if %ERRORLEVEL% EQU 0 (
     echo Found Python in PATH
     python --version
     echo.
-    python install_vb6_runtime.py
+    echo Running installer...
+    python "%~dp0install_vb6_runtime.py"
     goto :end
 )
 
@@ -51,7 +56,8 @@ if %ERRORLEVEL% EQU 0 (
     echo Found Python3 in PATH
     python3 --version
     echo.
-    python3 install_vb6_runtime.py
+    echo Running installer...
+    python3 "%~dp0install_vb6_runtime.py"
     goto :end
 )
 
@@ -83,7 +89,8 @@ for %%P in (
             echo Found Python at: %%P
             %%P --version
             echo.
-            %%P install_vb6_runtime.py
+            echo Running installer...
+            %%P "%~dp0install_vb6_runtime.py"
             goto :end
         )
     )
