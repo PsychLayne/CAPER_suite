@@ -28,7 +28,15 @@ The specified module could not be found.
 
 **Solution:**
 
-### Option 1: Automated Fix (Recommended)
+### Option 1: One-Click Setup (Easiest)
+1. Right-click `setup.bat` and select "Run as Administrator"
+2. Press Enter to begin
+3. Type `y` when prompted to install VB6 Runtime
+4. Wait for automatic download and installation (~1.4 MB)
+5. Restart your computer
+6. Test a task
+
+### Option 2: Automated Script
 1. Right-click and "Run as Administrator": `scripts/install_vb6_runtime.bat`
 2. Follow the on-screen instructions
 3. Restart your computer
