@@ -1,0 +1,25 @@
+# CAPER Suite Psychology Client Requirements
+# Python 3.7+ recommended
+
+# GUI Framework
+tkinter-tooltip>=2.1.0
+
+# Database access for .mdb files
+pyodbc>=4.0.39
+
+# Data handling
+pandas>=1.3.0
+openpyxl>=3.0.9
+
+# System utilities
+psutil>=5.9.0
+pathlib>=1.0.1
+
+# Configuration
+pyyaml>=6.0
+
+# Date/time handling
+python-dateutil>=2.8.2
+
+# Cross-platform compatibility
+pywin32>=305; platform_system=='Windows'
