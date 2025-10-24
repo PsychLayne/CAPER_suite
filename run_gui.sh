@@ -9,15 +9,29 @@ echo ""
 # Check if Python 3 is installed - try multiple commands
 PYTHON_CMD=""
 
+# Function to check if a command is Python 3
+check_python3() {
+    local cmd=$1
+    # Try to get version and check if it starts with "Python 3"
+    local version_output=$($cmd --version 2>&1)
+    if echo "$version_output" | grep -q "^Python 3"; then
+        echo "$cmd"
+        return 0
+    fi
+    return 1
+}
+
 # Try python3 first (preferred on Linux/Mac)
 if command -v python3 &> /dev/null; then
-    PYTHON_CMD="python3"
-# Try python command
-elif command -v python &> /dev/null; then
-    # Verify it's Python 3
-    PYTHON_VERSION=$(python --version 2>&1 | grep -oP '(?<=Python )[0-9]+')
-    if [ "$PYTHON_VERSION" = "3" ]; then
-        PYTHON_CMD="python"
+    if FOUND_CMD=$(check_python3 "python3"); then
+        PYTHON_CMD="$FOUND_CMD"
+    fi
+fi
+
+# If not found, try python command
+if [ -z "$PYTHON_CMD" ] && command -v python &> /dev/null; then
+    if FOUND_CMD=$(check_python3 "python"); then
+        PYTHON_CMD="$FOUND_CMD"
     fi
 fi
 
@@ -34,6 +48,8 @@ if [ -z "$PYTHON_CMD" ]; then
     echo "  1. Check if Python is installed: which python3"
     echo "  2. Check Python version: python3 --version"
     echo "  3. Make sure Python 3.7+ is in your PATH"
+    echo "  4. Try running: python3 --version"
+    echo "  5. Try running: python --version"
     echo ""
     read -p "Press Enter to exit..."
     exit 1
