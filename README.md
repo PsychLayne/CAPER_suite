@@ -53,6 +53,30 @@ That's it! The client will launch and guide you through the available tasks.
 
 ---
 
+## IMPORTANT: Windows Defender False Positive
+
+**Windows users:** Windows Defender may flag PASAT and other executables as threats. This is a **false positive** - the files are legitimate research software built with Visual Basic 6.0 (early 2000s).
+
+### Quick Fix:
+
+1. **Automatic (Easiest):**
+   - Right-click PowerShell and select "Run as Administrator"
+   - Run: `.\add_windows_defender_exclusion.ps1`
+   - Type 'Y' to confirm
+
+2. **Manual:**
+   - Open Windows Security → Virus & threat protection
+   - Click "Manage settings" → "Exclusions"
+   - Add the CAPER_suite folder as an exclusion
+
+### More Information:
+- See `QUICK_FIX_WINDOWS_DEFENDER.txt` for simple instructions
+- See `WINDOWS_DEFENDER_FALSE_POSITIVE.md` for complete technical details
+
+**This is safe:** The executables are legitimate psychology research tools with no malicious code. File hashes are documented for verification.
+
+---
+
 ## Installation
 
 ### Prerequisites
@@ -256,6 +280,14 @@ Once launched, you'll see a main menu with these options:
 ## Troubleshooting
 
 ### Common Issues
+
+#### **Windows Defender flagging tasks as viruses (MOST COMMON)**
+- This is a **false positive** - the files are safe
+- The executables are old VB6 applications that trigger heuristic detection
+- **Solution:** Add CAPER_suite folder to Windows Defender exclusions
+- **Automatic fix:** Run `.\add_windows_defender_exclusion.ps1` as Administrator
+- **Manual fix:** Windows Security → Virus & threat protection → Manage settings → Exclusions → Add folder
+- See `QUICK_FIX_WINDOWS_DEFENDER.txt` or `WINDOWS_DEFENDER_FALSE_POSITIVE.md` for details
 
 #### **"Python not found" error**
 - Install Python 3.7+ from python.org
