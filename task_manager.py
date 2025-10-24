@@ -292,3 +292,87 @@ class TaskManager:
                 print(f"  {issue}")
             print("\nPlease resolve these issues before running tasks.\n")
             return False
+
+    # GUI Helper Methods
+    def get_system_info(self):
+        """Get system information as a dictionary (for GUI)"""
+        wine_version = "N/A"
+        wine_installed = False
+
+        if not self.is_windows:
+            wine_path = shutil.which("wine")
+            if wine_path:
+                wine_installed = True
+                try:
+                    result = subprocess.run(["wine", "--version"],
+                                          capture_output=True, text=True, timeout=5)
+                    wine_version = result.stdout.strip()
+                except:
+                    wine_version = "Installed (version unknown)"
+
+        return {
+            "os": f"{platform.system()} {platform.release()}",
+            "platform": platform.system(),
+            "architecture": platform.machine(),
+            "python_version": sys.version.split()[0],
+            "wine_installed": wine_installed,
+            "wine_version": wine_version
+        }
+
+    def check_task_availability(self, task_name):
+        """Check if a task is available by name (for GUI)"""
+        # Find task ID by name
+        task_id = self._get_task_id_by_name(task_name)
+        if task_id:
+            return config.task_exists(task_id)
+        return False
+
+    def run_task(self, task_name):
+        """Run a task by name (for GUI)"""
+        task_id = self._get_task_id_by_name(task_name)
+        if task_id:
+            return self.launch_task(task_id)
+        raise ValueError(f"Task '{task_name}' not found")
+
+    def _get_task_id_by_name(self, task_name):
+        """Get task ID from task name"""
+        for task_id, task in config.PSYCHOLOGY_TASKS.items():
+            if task["name"] == task_name:
+                return task_id
+        return None
+
+    def get_all_tasks_dict(self):
+        """Get all tasks as a dictionary with names as keys (for GUI)"""
+        tasks = {}
+        for task_id, task in config.PSYCHOLOGY_TASKS.items():
+            tasks[task["name"]] = {
+                **task,
+                "task_id": task_id,
+                "available": config.task_exists(task_id)
+            }
+        return tasks
+
+    def export_all_data(self):
+        """Export all task data (for GUI)"""
+        exported = []
+        for task_id in config.get_all_task_ids():
+            task = config.PSYCHOLOGY_TASKS[task_id]
+            db_path = config.get_database_path(task_id)
+            if db_path and db_path.exists():
+                # Copy database to output folder
+                output_path = config.DATA_OUTPUT_DIR / f"{task['name']}_{task['database']}"
+                shutil.copy2(db_path, output_path)
+                exported.append(f"{task['name']}: {output_path}")
+
+            # Handle text output files
+            if task.get('output_file'):
+                output_file = config.get_task_path(task_id) / task['output_file']
+                if output_file.exists():
+                    dest_path = config.DATA_OUTPUT_DIR / f"{task['name']}_{task['output_file']}"
+                    shutil.copy2(output_file, dest_path)
+                    exported.append(f"{task['name']}: {dest_path}")
+
+        if exported:
+            return "\n".join(exported)
+        else:
+            return "No data files found to export."

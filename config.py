@@ -112,7 +112,13 @@ SYSTEM_REQUIREMENTS = {
         "Visual Basic 6.0 Runtime (msvbvm60.dll)",
         "Microsoft Jet 3.5 database engine",
         "Windows Common Controls (MSCOMCTL.OCX)"
-    ]
+    ],
+    # Additional fields for GUI
+    "python_version": "3.7",
+    "min_ram_mb": 512,
+    "min_screen_width": 800,
+    "min_screen_height": 600,
+    "wine_version": "5.0"
 }
 
 # Data Output Configuration
