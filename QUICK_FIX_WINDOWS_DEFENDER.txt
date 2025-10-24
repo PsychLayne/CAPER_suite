@@ -1,0 +1,76 @@
+================================================================================
+QUICK FIX: Windows Defender False Positive
+================================================================================
+
+PROBLEM: Windows Defender flags PASAT.exe (and other tasks) as a virus
+
+CAUSE: These are old Visual Basic 6 programs (from early 2000s). They're
+       legitimate research software, but Windows Defender doesn't recognize them.
+
+SOLUTION: Add an exclusion to Windows Defender
+
+================================================================================
+EASY METHOD (Automatic - Requires Administrator):
+================================================================================
+
+1. Right-click on PowerShell and select "Run as Administrator"
+2. Navigate to this directory
+3. Run: .\add_windows_defender_exclusion.ps1
+4. Type 'Y' when asked to confirm
+5. Done!
+
+================================================================================
+MANUAL METHOD (No PowerShell):
+================================================================================
+
+1. Open Windows Security
+   - Press Windows key + I
+   - Click "Privacy & Security" → "Windows Security"
+   - Click "Virus & threat protection"
+
+2. Add Exclusion
+   - Click "Manage settings" under "Virus & threat protection settings"
+   - Scroll down to "Exclusions"
+   - Click "Add or remove exclusions"
+   - Click "Add an exclusion" → "Folder"
+
+3. Select This Folder
+   - Navigate to wherever you installed CAPER_suite
+   - Select the entire CAPER_suite folder
+   - Click "Select Folder"
+
+4. Done!
+   - The CAPER_suite folder will now be excluded from scans
+   - You can run all tasks without interference
+
+================================================================================
+IS IT SAFE?
+================================================================================
+
+YES. These are legitimate psychology research tools:
+✓ No malicious code
+✓ No network communication
+✓ No system modifications
+✓ Standard VB6 research software from early 2000s
+✓ Used in academic research worldwide
+
+File verification:
+PASAT_Stnd.exe SHA256:
+8fdfe4e82d7523e8621d2add5974fec72e2b0c74240bf70214467f1320da88c2
+
+PASAT_7550.exe SHA256:
+25e46d32732107516ba0b16fc8b206a93ea55945ef141b117f21eac3389458b7
+
+================================================================================
+FOR MORE DETAILS
+================================================================================
+
+See: WINDOWS_DEFENDER_FALSE_POSITIVE.md
+
+This file contains:
+- Complete technical explanation
+- Multiple solution methods
+- Instructions for administrators/IT departments
+- How to submit false positive report to Microsoft
+
+================================================================================
