@@ -218,18 +218,32 @@ def main():
 
         success = install_vb6_runtime()
 
+        print("\n" + "=" * 80)
         if success:
+            print("Installation process completed!")
+            print("=" * 80)
+            input("\nPress Enter to exit...")
             sys.exit(0)
         else:
+            print("Installation not completed")
+            print("=" * 80)
+            print("\nPlease follow the instructions above.")
+            input("\nPress Enter to exit...")
             sys.exit(1)
 
     except KeyboardInterrupt:
         print("\n\nInstallation cancelled by user.")
+        input("\nPress Enter to exit...")
         sys.exit(1)
     except Exception as e:
+        print("\n" + "=" * 80)
+        print("ERROR OCCURRED")
+        print("=" * 80)
         print(f"\nError: {e}")
         import traceback
         traceback.print_exc()
+        print("\n" + "=" * 80)
+        input("\nPress Enter to exit...")
         sys.exit(1)
 
 

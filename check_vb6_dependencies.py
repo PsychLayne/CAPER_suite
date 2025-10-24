@@ -197,16 +197,23 @@ def main():
         all_present = check_dependencies()
 
         if all_present:
+            input("\nPress Enter to exit...")
             sys.exit(0)
         else:
             print("\nAfter installing the VB6 runtime, run this script again to verify.")
             print("\n" + "=" * 80 + "\n")
+            input("Press Enter to exit...")
             sys.exit(1)
 
     except Exception as e:
+        print("\n" + "=" * 80)
+        print("ERROR OCCURRED")
+        print("=" * 80)
         print(f"\nError during dependency check: {e}")
         import traceback
         traceback.print_exc()
+        print("\n" + "=" * 80)
+        input("\nPress Enter to exit...")
         sys.exit(1)
 
 
