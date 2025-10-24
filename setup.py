@@ -184,31 +184,68 @@ def is_admin():
 
 
 def download_vb6_runtime():
-    """Download VB6 Runtime SP6 from Microsoft"""
-    print("\n  Downloading VB6 Runtime SP6 from Microsoft...")
+    """Download VB6 Runtime SP6 from Microsoft or alternative sources"""
+    print("\n  Downloading VB6 Runtime SP6...")
     print("  This may take a few minutes depending on your connection...")
 
-    # Microsoft's official download URL
-    url = "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VBRun60sp6.exe"
+    # Try multiple download sources (Microsoft links often change)
+    download_urls = [
+        # Microsoft's original download (may not work)
+        "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VBRun60sp6.exe",
+        # Alternative Microsoft CDN
+        "https://download.microsoft.com/download/vb60sp6/Update/6/W9XNT4/EN-US/VBRun60sp6.exe",
+        # Archive.org backup (community maintained)
+        "https://ia801609.us.archive.org/10/items/vbrun60sp6/VBRun60sp6.exe",
+    ]
 
     temp_dir = tempfile.gettempdir()
     installer_path = os.path.join(temp_dir, "VBRun60sp6.exe")
 
-    try:
-        def reporthook(count, block_size, total_size):
-            if total_size > 0:
-                percent = int(count * block_size * 100 / total_size)
-                sys.stdout.write(f"\r  Progress: {percent}% ")
-                sys.stdout.flush()
+    # Try each URL
+    for i, url in enumerate(download_urls, 1):
+        try:
+            print(f"\n  Attempting download from source {i}/{len(download_urls)}...")
+            print(f"  URL: {url[:60]}...")
 
-        urllib.request.urlretrieve(url, installer_path, reporthook)
-        print("\n  ✓ Download complete!")
-        return installer_path
-    except Exception as e:
-        print(f"\n  ✗ Download failed: {e}")
-        print("\n  You can download manually from:")
-        print("  https://www.microsoft.com/en-us/download/details.aspx?id=24417")
-        return None
+            def reporthook(count, block_size, total_size):
+                if total_size > 0:
+                    percent = int(count * block_size * 100 / total_size)
+                    sys.stdout.write(f"\r  Progress: {percent}% ")
+                    sys.stdout.flush()
+
+            urllib.request.urlretrieve(url, installer_path, reporthook)
+            print("\n  ✓ Download complete!")
+
+            # Verify the file exists and has reasonable size
+            if os.path.exists(installer_path):
+                file_size = os.path.getsize(installer_path)
+                if file_size > 100000:  # At least 100KB
+                    print(f"  ✓ Downloaded {file_size / 1024:.1f} KB")
+                    return installer_path
+                else:
+                    print(f"  ⚠ Downloaded file too small ({file_size} bytes), trying next source...")
+                    continue
+
+        except Exception as e:
+            print(f"\n  ✗ Download failed from source {i}: {e}")
+            if i < len(download_urls):
+                print(f"  Trying next source...")
+            continue
+
+    # All downloads failed
+    print("\n  ✗ All download sources failed!")
+    print("\n  Please download VB6 Runtime SP6 manually:")
+    print("\n  Option 1: Microsoft Download Center")
+    print("    1. Visit: https://www.microsoft.com/en-us/download/details.aspx?id=24417")
+    print("    2. Click 'Download' and save VBRun60sp6.exe")
+    print("\n  Option 2: Archive.org")
+    print("    1. Visit: https://archive.org/details/vbrun60sp6")
+    print("    2. Download VBRun60sp6.exe")
+    print("\n  Option 3: Search for 'VB6 Runtime SP6' or 'VBRun60sp6.exe'")
+    print("\n  After downloading, run as Administrator: VBRun60sp6.exe")
+    print("\n  See docs/VB6_DOWNLOAD_SOURCES.md for more download options.")
+
+    return None
 
 
 def install_vb6_runtime_auto():
@@ -291,9 +328,11 @@ def check_vb6_dependencies():
             # Offer automatic installation
             print("\n  Would you like to automatically download and install VB6 Runtime SP6?")
             print("  This will:")
-            print("    • Download VBRun60sp6.exe from Microsoft (~1.4 MB)")
+            print("    • Try to download VBRun60sp6.exe from multiple sources (~1.4 MB)")
+            print("    • Microsoft official, Microsoft CDN, or Archive.org")
             print("    • Install it automatically")
             print("    • Requires Administrator privileges")
+            print("\n  Note: If automatic download fails, you can download manually.")
 
             response = input("\n  Install VB6 Runtime now? (y/n): ").strip().lower()
 
