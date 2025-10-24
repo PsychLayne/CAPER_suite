@@ -48,7 +48,8 @@ class PsychologyClient:
         print("[3]  View Task Information")
         print("[4]  System Information")
         print("[5]  Verify System Requirements")
-        print("[6]  Help")
+        print("[6]  Check VB6 Dependencies (Windows)")
+        print("[7]  Help")
         print("[Q]  Quit")
         print()
 
@@ -92,9 +93,15 @@ class PsychologyClient:
         print("  - Linux/Mac with Wine installed")
         print("  - Sound card for audio tasks")
         print("  - Display: 800x600 minimum")
+        print("\nTROUBLESHOOTING:")
+        print("  - If tasks fail to start with 'module not found' error:")
+        print("    Run 'Check VB6 Dependencies' from the main menu")
+        print("  - Windows Defender may flag VB6 tasks as false positives")
+        print("    See QUICK_FIX_WINDOWS_DEFENDER.txt for solution")
         print("\nSUPPORT:")
         print("  - For task-specific instructions, see .doc files in task directories")
         print("  - For technical issues, check system requirements")
+        print("  - See README.md for comprehensive troubleshooting guide")
         print("=" * 80 + "\n")
 
     def handle_list_tasks(self):
@@ -156,6 +163,55 @@ class PsychologyClient:
         self.task_manager.run_all_checks()
         input("Press Enter to continue...")
 
+    def handle_check_vb6_dependencies(self):
+        """Handle check VB6 dependencies option"""
+        import platform
+        if platform.system() != "Windows":
+            print("\n" + "=" * 80)
+            print("VB6 DEPENDENCY CHECKER - NON-WINDOWS SYSTEM")
+            print("=" * 80)
+            print("\nThis check is only needed on Windows.")
+            print("On Linux/Mac, Wine provides the necessary VB6 runtime libraries.")
+            print("\nIf you're having issues with Wine:")
+            print("  - Ensure Wine is installed: wine --version")
+            print("  - Try running a task to see if it works")
+            print("=" * 80 + "\n")
+            input("Press Enter to continue...")
+            return
+
+        print("\n" + "=" * 80)
+        print("CHECKING VB6 DEPENDENCIES")
+        print("=" * 80)
+        print("\nRunning dependency checker...")
+        print("This will check if all required DLLs are installed.\n")
+
+        try:
+            import subprocess
+            result = subprocess.run(
+                [sys.executable, "check_vb6_dependencies.py"],
+                cwd=str(Path(__file__).parent),
+                capture_output=False
+            )
+
+            if result.returncode != 0:
+                print("\n" + "=" * 80)
+                print("NEXT STEPS")
+                print("=" * 80)
+                print("\nTo install missing dependencies:")
+                print("  1. Open Command Prompt as Administrator")
+                print("  2. Navigate to the CAPER_suite directory")
+                print("  3. Run: python install_vb6_runtime.py")
+                print("\nOr see QUICK_FIX_MODULE_NOT_FOUND.txt for detailed instructions.")
+                print("=" * 80)
+
+        except Exception as e:
+            print(f"\nError running dependency checker: {e}")
+            print("\nYou can manually run:")
+            print("  python check_vb6_dependencies.py")
+
+        print()
+        input("Press Enter to continue...")
+
     def run(self):
         """Main application loop"""
         self.display_banner()
@@ -189,6 +245,8 @@ class PsychologyClient:
             elif choice == '5':
                 self.handle_verify_system()
             elif choice == '6':
+                self.handle_check_vb6_dependencies()
+            elif choice == '7':
                 self.display_help()
             elif choice == 'Q':
                 print("\nThank you for using CAPER Suite Psychology Client!")

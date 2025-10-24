@@ -281,7 +281,21 @@ Once launched, you'll see a main menu with these options:
 
 ### Common Issues
 
-#### **Windows Defender flagging tasks as viruses (MOST COMMON)**
+#### **"System Error &H8007007E - Module Not Found" (MOST COMMON)**
+- **Error:** "System Error &H8007007E (-2147024770). The specified module could not be found."
+- **Cause:** Visual Basic 6.0 runtime libraries (DLLs) are missing from Windows
+- **Solution:** Install VB6 Runtime SP6
+- **Quick Fix:**
+  1. Check dependencies: `python check_vb6_dependencies.py`
+  2. Install runtime (as Administrator): `python install_vb6_runtime.py`
+  3. Verify fix: `python check_vb6_dependencies.py`
+- **Manual Installation:**
+  - Download VB6 Runtime SP6: https://www.microsoft.com/en-us/download/details.aspx?id=24417
+  - Run VBRun60sp6.exe as Administrator
+  - Restart your computer
+- See `QUICK_FIX_MODULE_NOT_FOUND.txt` for detailed instructions
+
+#### **Windows Defender flagging tasks as viruses**
 - This is a **false positive** - the files are safe
 - The executables are old VB6 applications that trigger heuristic detection
 - **Solution:** Add CAPER_suite folder to Windows Defender exclusions
