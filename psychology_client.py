@@ -188,7 +188,7 @@ class PsychologyClient:
         try:
             import subprocess
             result = subprocess.run(
-                [sys.executable, "check_vb6_dependencies.py"],
+                [sys.executable, "scripts/check_vb6_dependencies.py"],
                 cwd=str(Path(__file__).parent),
                 capture_output=False
             )
@@ -200,14 +200,14 @@ class PsychologyClient:
                 print("\nTo install missing dependencies:")
                 print("  1. Open Command Prompt as Administrator")
                 print("  2. Navigate to the CAPER_suite directory")
-                print("  3. Run: python install_vb6_runtime.py")
+                print("  3. Run: python scripts/install_vb6_runtime.py")
                 print("\nOr see QUICK_FIX_MODULE_NOT_FOUND.txt for detailed instructions.")
                 print("=" * 80)
 
         except Exception as e:
             print(f"\nError running dependency checker: {e}")
             print("\nYou can manually run:")
-            print("  python check_vb6_dependencies.py")
+            print("  python scripts/check_vb6_dependencies.py")
 
         print()
         input("Press Enter to continue...")

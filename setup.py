@@ -180,6 +180,8 @@ def check_vb6_dependencies():
 
     try:
         # Import the VB6 checker
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent / "scripts"))
         from check_vb6_dependencies import check_dependencies
 
         # Suppress the output and just get the result
@@ -199,15 +201,15 @@ def check_vb6_dependencies():
             print("\n  This will prevent tasks from running!")
             print("  You'll see error: 'System Error &H8007007E - Module not found'")
             print("\n  To fix this:")
-            print("    1. Run as Administrator: install_vb6_runtime.bat")
-            print("    2. Or manually: python install_vb6_runtime.py")
-            print("    3. See FIX_VB6_RUNTIME.md for detailed instructions")
+            print("    1. Run as Administrator: scripts\\install_vb6_runtime.bat")
+            print("    2. Or manually: python scripts\\install_vb6_runtime.py")
+            print("    3. See docs/FIX_VB6_RUNTIME.md for detailed instructions")
             return False
 
     except Exception as e:
         print(f"⚠ Could not check VB6 dependencies: {e}")
         print("\n  You can check manually by running:")
-        print("    check_vb6_dependencies.bat")
+        print("    scripts\\check_vb6_dependencies.bat")
         return False
 
 
@@ -327,10 +329,10 @@ def main():
             print("!" * 80)
             print("\nTasks will NOT work until you install VB6 Runtime SP6.")
             print("\nTo fix this:")
-            print("  1. Right-click: install_vb6_runtime.bat")
+            print("  1. Right-click: scripts\\install_vb6_runtime.bat")
             print("  2. Select 'Run as Administrator'")
             print("  3. Follow the installation wizard")
-            print("\nFor detailed instructions, see: FIX_VB6_RUNTIME.md")
+            print("\nFor detailed instructions, see: docs/FIX_VB6_RUNTIME.md")
             print("!" * 80)
         print("\nPlease review the messages above and resolve any issues.\n")
         return 1
