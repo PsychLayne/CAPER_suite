@@ -89,26 +89,30 @@ That's it! The client will launch and guide you through the available tasks.
   - Sound card (for audio tasks)
   - Display: 800x600 minimum resolution
 
-### First-Time Setup
+### One-Click Setup (Recommended)
 
-1. **Install Python** (if not already installed):
-   - **Windows:** Download from [python.org](https://www.python.org/downloads/)
-   - **Linux:** `sudo apt-get install python3` (Ubuntu/Debian)
-   - **Mac:** `brew install python3`
+**Windows:**
+1. **Right-click** `setup.bat` and select **"Run as Administrator"**
+2. Press Enter to begin
+3. Type `y` when prompted to install VB6 Runtime
+4. Wait for automatic download and installation
+5. Done! Everything is configured automatically.
 
-2. **Run the setup script:**
-   ```bash
-   python setup.py
-   ```
+**Or manually:**
+```cmd
+python setup.py
+```
 
-   This will:
-   - Check your Python version
-   - Install required packages
-   - Verify system requirements
-   - Create necessary directories
-   - Test the installation
+**What it does:**
+- ✓ Checks Python version
+- ✓ Installs Python packages automatically
+- ✓ **Downloads and installs VB6 Runtime SP6** (Windows only, ~1.4 MB)
+- ✓ Verifies system requirements
+- ✓ Creates necessary directories
+- ✓ Tests the installation
 
-3. **Linux/Mac only:** Install Wine (if not already installed):
+**Linux/Mac:**
+1. Install Wine first (if not already installed):
    ```bash
    # Ubuntu/Debian
    sudo apt-get install wine
@@ -118,6 +122,11 @@ That's it! The client will launch and guide you through the available tasks.
 
    # macOS
    brew install wine-stable
+   ```
+
+2. Run setup:
+   ```bash
+   python setup.py
    ```
 
 ---
