@@ -170,9 +170,50 @@ def create_directories():
     return True
 
 
+def check_vb6_dependencies():
+    """Check if VB6 runtime dependencies are installed (Windows only)"""
+    print_step(5, "Checking VB6 runtime dependencies")
+
+    if platform.system() != "Windows":
+        print("⊗ Skipped (not Windows)")
+        return True
+
+    try:
+        # Import the VB6 checker
+        from check_vb6_dependencies import check_dependencies
+
+        # Suppress the output and just get the result
+        import io
+        import contextlib
+
+        # Capture output
+        f = io.StringIO()
+        with contextlib.redirect_stdout(f):
+            all_present = check_dependencies()
+
+        if all_present:
+            print("✓ VB6 runtime dependencies are installed")
+            return True
+        else:
+            print("⚠ VB6 runtime dependencies are MISSING")
+            print("\n  This will prevent tasks from running!")
+            print("  You'll see error: 'System Error &H8007007E - Module not found'")
+            print("\n  To fix this:")
+            print("    1. Run as Administrator: install_vb6_runtime.bat")
+            print("    2. Or manually: python install_vb6_runtime.py")
+            print("    3. See FIX_VB6_RUNTIME.md for detailed instructions")
+            return False
+
+    except Exception as e:
+        print(f"⚠ Could not check VB6 dependencies: {e}")
+        print("\n  You can check manually by running:")
+        print("    check_vb6_dependencies.bat")
+        return False
+
+
 def verify_installation():
     """Verify that installation was successful"""
-    print_step(5, "Verifying installation")
+    print_step(6, "Verifying installation")
 
     try:
         # Try importing the modules
@@ -240,7 +281,8 @@ def main():
 
     # Run setup steps
     steps_passed = 0
-    total_steps = 5
+    total_steps = 6
+    vb6_installed = True
 
     if check_python_version():
         steps_passed += 1
@@ -257,6 +299,14 @@ def main():
     if create_directories():
         steps_passed += 1
 
+    # Check VB6 dependencies (Windows only)
+    if check_vb6_dependencies():
+        steps_passed += 1
+    else:
+        # Count as passed but remember it's missing
+        steps_passed += 1
+        vb6_installed = False
+
     if verify_installation():
         steps_passed += 1
 
@@ -265,14 +315,24 @@ def main():
     print(f" SETUP RESULTS: {steps_passed}/{total_steps} steps completed")
     print("=" * 80)
 
-    if steps_passed == total_steps:
+    if steps_passed == total_steps and vb6_installed:
         print("\n✓ Setup completed successfully!")
         print_next_steps()
         return 0
     else:
         print("\n⚠ Setup completed with warnings.")
-        print("Some features may not work correctly.")
-        print("Please review the messages above and resolve any issues.\n")
+        if not vb6_installed and platform.system() == "Windows":
+            print("\n" + "!" * 80)
+            print("IMPORTANT: VB6 Runtime is NOT installed!")
+            print("!" * 80)
+            print("\nTasks will NOT work until you install VB6 Runtime SP6.")
+            print("\nTo fix this:")
+            print("  1. Right-click: install_vb6_runtime.bat")
+            print("  2. Select 'Run as Administrator'")
+            print("  3. Follow the installation wizard")
+            print("\nFor detailed instructions, see: FIX_VB6_RUNTIME.md")
+            print("!" * 80)
+        print("\nPlease review the messages above and resolve any issues.\n")
         return 1
 
 
