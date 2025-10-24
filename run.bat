@@ -46,20 +46,44 @@ if %errorlevel% equ 0 (
     )
 )
 
+REM Try to find Python in common installation locations
+for %%P in (
+    "%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
+    "%LOCALAPPDATA%\Programs\Python\Python311\python.exe"
+    "%LOCALAPPDATA%\Programs\Python\Python310\python.exe"
+    "%LOCALAPPDATA%\Programs\Python\Python39\python.exe"
+    "%PROGRAMFILES%\Python312\python.exe"
+    "%PROGRAMFILES%\Python311\python.exe"
+    "%PROGRAMFILES%\Python310\python.exe"
+    "C:\Python312\python.exe"
+    "C:\Python311\python.exe"
+    "C:\Python310\python.exe"
+) do (
+    if exist %%P (
+        %%P --version 2>&1 | findstr /C:"Python 3" >nul
+        if %errorlevel% equ 0 (
+            set PYTHON_CMD=%%P
+            set PYTHON_FOUND=1
+            goto :python_found
+        )
+    )
+)
+
 REM No Python found
 :python_not_found
 echo ERROR: Python 3 is not installed or not in PATH
 echo.
-echo Please install Python 3.7 or higher from https://www.python.org/
-echo Make sure to check "Add Python to PATH" during installation
+echo Python is installed but this script cannot find it.
 echo.
-echo Troubleshooting:
-echo   1. Check if Python is installed: Open Command Prompt and try "py --version"
-echo   2. Try "python --version" or "python3 --version"
-echo   3. If using Microsoft Store Python, try uninstalling and installing from python.org
-echo   4. Make sure Python is added to your system PATH
-echo   5. Restart your terminal/command prompt after installing Python
-echo   6. For Python 3.14+, use the 'py' launcher or ensure Python is in PATH
+echo See QUICK_FIX_PYTHON_NOT_FOUND.txt for detailed solutions.
+echo.
+echo Quick fixes:
+echo   1. Add Python to PATH (see QUICK_FIX_PYTHON_NOT_FOUND.txt)
+echo   2. Or reinstall Python and CHECK "Add Python to PATH"
+echo   3. Or try: py "%~dp0psychology_client.py" (use py launcher)
+echo.
+echo Python download: https://www.python.org/downloads/
+echo IMPORTANT: Check "Add Python to PATH" during installation!
 echo.
 pause
 exit /b 1
