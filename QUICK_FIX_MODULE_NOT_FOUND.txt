@@ -1,0 +1,187 @@
+================================================================================
+QUICK FIX: System Error &H8007007E - Module Not Found
+================================================================================
+
+PROBLEM: When trying to run a task, you get this error:
+         "System Error &H8007007E (-2147024770)"
+         "The specified module could not be found."
+
+CAUSE:   Visual Basic 6.0 runtime libraries (DLLs) are missing from Windows.
+         The CAPER Suite tasks were built with VB6 and need these libraries.
+
+SOLUTION: Install VB6 Runtime SP6
+
+================================================================================
+METHOD 1: AUTOMATIC CHECK & FIX (RECOMMENDED)
+================================================================================
+
+Step 1: Check what's missing
+   Open Command Prompt in the CAPER_suite folder and run:
+
+      python check_vb6_dependencies.py
+
+   This will show you exactly which DLLs are missing.
+
+Step 2: Install the runtime
+   Run this command AS ADMINISTRATOR:
+
+      python install_vb6_runtime.py
+
+   Important: Right-click Command Prompt → "Run as Administrator"
+              before running this command.
+
+Step 3: Follow the on-screen instructions
+   The installer will guide you through downloading and installing
+   the VB6 runtime package.
+
+Step 4: Verify the fix
+   Run the dependency checker again:
+
+      python check_vb6_dependencies.py
+
+   You should see all required DLLs marked with ✓
+
+================================================================================
+METHOD 2: MANUAL INSTALLATION
+================================================================================
+
+Step 1: Download VB6 Runtime SP6
+   Go to: https://www.microsoft.com/en-us/download/details.aspx?id=24417
+
+   Click "Download" and save: VBRun60sp6.exe
+
+Step 2: Run the installer
+   Double-click VBRun60sp6.exe
+
+   Follow the installation wizard
+
+   You may need administrator privileges (right-click → Run as Administrator)
+
+Step 3: Restart your computer (recommended)
+   This ensures all DLLs are properly registered
+
+Step 4: Try running your task again
+   Launch psychology_client.py and run your task
+
+================================================================================
+VERIFICATION
+================================================================================
+
+After installing, verify the fix worked:
+
+1. Run: python check_vb6_dependencies.py
+   Should show all DLLs as ✓ found
+
+2. Try launching a task:
+   python psychology_client.py
+   Select "Launch a Task" and choose any task
+
+3. If the task opens successfully, you're all set!
+
+================================================================================
+ALTERNATIVE: If VB6 Runtime Won't Install
+================================================================================
+
+If you can't install VB6 Runtime (due to corporate policy, etc.):
+
+Option A: Run in Windows Sandbox
+   - Enable Windows Sandbox (Windows 10 Pro/Enterprise)
+   - Copy CAPER_suite to the sandbox
+   - Install VB6 runtime in sandbox only
+   - Run tasks in the isolated sandbox environment
+
+Option B: Use a Virtual Machine
+   - Create a Windows VM (VirtualBox, VMware)
+   - Install CAPER_suite in the VM
+   - Install VB6 runtime in the VM
+   - Run tasks in the VM
+
+Option C: Use Wine on Linux/Mac
+   - Wine includes compatible VB6 runtime libraries
+   - Install Wine on Linux/Mac
+   - Run tasks through Wine (handled automatically by psychology_client.py)
+
+================================================================================
+WHAT DLLS ARE NEEDED?
+================================================================================
+
+Core VB6 Runtime:
+   - msvbvm60.dll       (Visual Basic 6 Runtime)
+   - oleaut32.dll       (OLE Automation)
+   - olepro32.dll       (OLE Property Support)
+
+Database Support:
+   - dao350.dll         (Data Access Objects)
+   - msjet35.dll        (Microsoft Jet Database Engine)
+   - msjint35.dll       (Jet International)
+   - msrd2x35.dll       (Jet ISAM)
+
+Common Controls:
+   - mscomctl.ocx       (Windows Common Controls)
+   - mscomct2.ocx       (Common Controls 2)
+   - comdlg32.ocx       (Common Dialog)
+   - msmask32.ocx       (Masked Edit)
+
+And several others (see check_vb6_dependencies.py for complete list)
+
+================================================================================
+STILL HAVING ISSUES?
+================================================================================
+
+1. Make sure you ran the installer AS ADMINISTRATOR
+   Right-click Command Prompt → "Run as Administrator"
+
+2. Restart your computer after installing VB6 Runtime
+   Some DLLs may not register until after a reboot
+
+3. Check Windows Defender isn't blocking files
+   See QUICK_FIX_WINDOWS_DEFENDER.txt for instructions
+
+4. Verify the task executable exists
+   python psychology_client.py
+   Select "Verify System Requirements"
+
+5. Check for third-party antivirus interference
+   Temporarily disable and try again
+
+================================================================================
+FOR IT ADMINISTRATORS
+================================================================================
+
+Deploying CAPER Suite in a lab or institutional setting:
+
+1. Pre-install VB6 Runtime SP6 on all computers
+   Use Group Policy or deployment tools
+
+2. Add Windows Defender exclusions
+   See QUICK_FIX_WINDOWS_DEFENDER.txt
+
+3. Test on one computer first
+   Verify all tasks launch successfully
+
+4. Create a deployment package
+   Include VB6 Runtime installer with CAPER Suite
+
+================================================================================
+TECHNICAL DETAILS
+================================================================================
+
+Error Code: 0x8007007E (-2147024770)
+Windows Error: ERROR_MOD_NOT_FOUND
+Meaning: A DLL required by the application could not be found
+
+The CAPER Suite tasks are Visual Basic 6.0 applications from the
+early 2000s. They require the VB6 runtime libraries which are not
+included with modern Windows by default.
+
+Installing VB6 Runtime SP6 provides all necessary libraries to
+run these legacy applications.
+
+================================================================================
+
+This is a common issue with VB6 applications on modern Windows systems.
+After installing VB6 Runtime SP6, all tasks should work normally.
+
+For more help, see README.md or run: python psychology_client.py
+
+================================================================================

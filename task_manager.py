@@ -120,7 +120,24 @@ class TaskManager:
         try:
             if self.is_windows:
                 # Windows: Direct execution
-                subprocess.Popen([str(exe_path)], cwd=str(exe_path.parent))
+                process = subprocess.Popen([str(exe_path)], cwd=str(exe_path.parent))
+
+                # Give the process a moment to start and check for immediate failures
+                import time
+                time.sleep(0.5)
+
+                # Check if process is still running
+                if process.poll() is not None:
+                    # Process terminated immediately - likely a DLL error
+                    print(f"\n✗ Task failed to start!")
+                    print(f"\nThis is likely caused by missing Visual Basic 6.0 runtime libraries.")
+                    print(f"\nCommon error: 'System Error &H8007007E - Module not found'")
+                    print(f"\nTo fix this:")
+                    print(f"  1. Check dependencies: python check_vb6_dependencies.py")
+                    print(f"  2. Install VB6 Runtime: python install_vb6_runtime.py (as Administrator)")
+                    print(f"\nSee QUICK_FIX_MODULE_NOT_FOUND.txt for detailed instructions.")
+                    return False
+
                 print(f"\n✓ Task launched successfully!")
                 print(f"The task is now running in a separate window.")
                 print(f"Data will be saved to: {exe_path.parent}")
@@ -147,8 +164,27 @@ class TaskManager:
 
             return True
 
+        except FileNotFoundError as e:
+            print(f"\n✗ Error launching task: {e}")
+            print(f"\nThe executable was not found or cannot be executed.")
+            return False
+        except PermissionError as e:
+            print(f"\n✗ Error launching task: Permission denied")
+            print(f"\nPlease check file permissions for: {exe_path}")
+            return False
+        except OSError as e:
+            # OSError code 0xC000007B or similar indicates DLL issues
+            print(f"\n✗ Error launching task: {e}")
+            print(f"\nThis is likely caused by missing system libraries.")
+            print(f"\nTo fix this:")
+            print(f"  1. Check dependencies: python check_vb6_dependencies.py")
+            print(f"  2. Install VB6 Runtime: python install_vb6_runtime.py (as Administrator)")
+            print(f"\nSee QUICK_FIX_MODULE_NOT_FOUND.txt for detailed instructions.")
+            return False
         except Exception as e:
-            print(f"Error launching task: {e}")
+            print(f"\n✗ Error launching task: {e}")
+            print(f"\nIf you see 'module not found' or similar errors:")
+            print(f"  Run: python check_vb6_dependencies.py")
             return False
 
     def _backup_task_data(self, task_id):
