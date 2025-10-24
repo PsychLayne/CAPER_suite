@@ -133,8 +133,8 @@ class TaskManager:
                     print(f"\nThis is likely caused by missing Visual Basic 6.0 runtime libraries.")
                     print(f"\nCommon error: 'System Error &H8007007E - Module not found'")
                     print(f"\nTo fix this:")
-                    print(f"  1. Check dependencies: python check_vb6_dependencies.py")
-                    print(f"  2. Install VB6 Runtime: python install_vb6_runtime.py (as Administrator)")
+                    print(f"  1. Check dependencies: python scripts/check_vb6_dependencies.py")
+                    print(f"  2. Install VB6 Runtime: python scripts/install_vb6_runtime.py (as Administrator)")
                     print(f"\nSee QUICK_FIX_MODULE_NOT_FOUND.txt for detailed instructions.")
                     return False
 
@@ -177,14 +177,14 @@ class TaskManager:
             print(f"\n✗ Error launching task: {e}")
             print(f"\nThis is likely caused by missing system libraries.")
             print(f"\nTo fix this:")
-            print(f"  1. Check dependencies: python check_vb6_dependencies.py")
-            print(f"  2. Install VB6 Runtime: python install_vb6_runtime.py (as Administrator)")
+            print(f"  1. Check dependencies: python scripts/check_vb6_dependencies.py")
+            print(f"  2. Install VB6 Runtime: python scripts/install_vb6_runtime.py (as Administrator)")
             print(f"\nSee QUICK_FIX_MODULE_NOT_FOUND.txt for detailed instructions.")
             return False
         except Exception as e:
             print(f"\n✗ Error launching task: {e}")
             print(f"\nIf you see 'module not found' or similar errors:")
-            print(f"  Run: python check_vb6_dependencies.py")
+            print(f"  Run: python scripts/check_vb6_dependencies.py")
             return False
 
     def _backup_task_data(self, task_id):
