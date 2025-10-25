@@ -1,18 +1,17 @@
 @echo off
-REM One-Click Setup for CAPER Suite
-REM Automatically downloads and installs all requirements including VB6 Runtime
+REM CAPER Suite - Simple Setup Script
+REM Installs VB6 Runtime (included) and Python dependencies
 
 echo ============================================================================
-echo CAPER SUITE - ONE-CLICK SETUP
+echo CAPER SUITE - SETUP
 echo ============================================================================
 echo.
-echo This script will automatically set up everything you need:
+echo This script will set up everything you need:
+echo   - Install VB6 Runtime SP6 (included in this package)
 echo   - Install Python packages
-echo   - Download and install VB6 Runtime SP6
-echo   - Verify system requirements
 echo   - Create necessary directories
 echo.
-echo IMPORTANT: For VB6 Runtime installation, you MUST run as Administrator!
+echo IMPORTANT: You MUST run as Administrator for VB6 Runtime installation!
 echo.
 echo If you're not running as Administrator:
 echo   1. Close this window
@@ -27,101 +26,155 @@ pause
 REM Change to the script's directory
 cd /d "%~dp0"
 
-REM Try to find Python
-echo Searching for Python...
+REM Step 1: Install VB6 Runtime
 echo.
+echo [1/3] Installing VB6 Runtime SP6...
+echo ----------------------------------------------------------------------------
+if exist "vbrun60sp6.exe" (
+    echo Found VB6 Runtime installer: vbrun60sp6.exe
+    echo.
+    echo Running installer (this may take a minute)...
+    echo Please click through any prompts that appear.
+    echo.
 
-REM First, try py launcher (most reliable on Windows)
+    REM Run the installer
+    start /wait vbrun60sp6.exe
+
+    if %ERRORLEVEL% EQU 0 (
+        echo.
+        echo VB6 Runtime installation completed!
+    ) else (
+        echo.
+        echo VB6 Runtime installer finished with code: %ERRORLEVEL%
+        echo If you saw any errors, please run the installer manually.
+    )
+) else (
+    echo ERROR: vbrun60sp6.exe not found!
+    echo Please make sure it's in the same folder as this script.
+    pause
+    exit /b 1
+)
+
+echo.
+echo ============================================================================
+pause
+
+REM Step 2: Install Python packages
+echo.
+echo [2/3] Installing Python packages...
+echo ----------------------------------------------------------------------------
+
+REM Try to find Python
+set PYTHON_CMD=
+set PYTHON_FOUND=0
+
+REM Try py launcher first (most reliable on Windows)
 py --version >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo Found Python Launcher (py)
-    py --version
-    echo.
-    echo Starting setup...
-    echo.
-    py setup.py
-    goto :end
+    set PYTHON_CMD=py
+    set PYTHON_FOUND=1
+    goto :python_found
 )
 
 REM Try python command
 python --version >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo Found Python in PATH
-    python --version
-    echo.
-    echo Starting setup...
-    echo.
-    python setup.py
-    goto :end
+    set PYTHON_CMD=python
+    set PYTHON_FOUND=1
+    goto :python_found
 )
 
 REM Try python3 command
 python3 --version >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo Found Python3 in PATH
-    python3 --version
-    echo.
-    echo Starting setup...
-    echo.
-    python3 setup.py
-    goto :end
+    set PYTHON_CMD=python3
+    set PYTHON_FOUND=1
+    goto :python_found
 )
 
 REM Try common Python installation locations
-echo Python not in PATH, searching common installation locations...
-echo.
-
 for %%P in (
     "%LOCALAPPDATA%\Programs\Python\Python314\python.exe"
     "%LOCALAPPDATA%\Programs\Python\Python313\python.exe"
     "%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
     "%LOCALAPPDATA%\Programs\Python\Python311\python.exe"
-    "%LOCALAPPDATA%\Programs\Python\Python310\python.exe"
     "%PROGRAMFILES%\Python314\python.exe"
     "%PROGRAMFILES%\Python313\python.exe"
     "%PROGRAMFILES%\Python312\python.exe"
-    "C:\Python314\python.exe"
-    "C:\Python313\python.exe"
-    "C:\Python312\python.exe"
 ) do (
     if exist %%P (
-        REM Test if this Python actually works
         %%P --version >nul 2>&1
         if %ERRORLEVEL% EQU 0 (
-            echo Found Python at: %%P
-            %%P --version
-            echo.
-            echo Starting setup...
-            echo.
-            %%P setup.py
-            goto :end
+            set PYTHON_CMD=%%P
+            set PYTHON_FOUND=1
+            goto :python_found
         )
     )
 )
 
 REM Python not found
+:python_not_found
 echo.
-echo ============================================================================
-echo ERROR: Python not found
-echo ============================================================================
+echo ERROR: Python not found!
 echo.
 echo Python is required to run CAPER Suite.
-echo.
 echo Please install Python 3.7 or higher from:
 echo   https://www.python.org/downloads/
 echo.
 echo IMPORTANT: During installation, CHECK the box "Add Python to PATH"!
 echo.
-echo After installing Python, run this setup again.
-echo.
-echo ============================================================================
 pause
 exit /b 1
 
-:end
+:python_found
+echo Found Python: %PYTHON_CMD%
+%PYTHON_CMD% --version
+echo.
+
+REM Install packages
+if exist "requirements.txt" (
+    echo Installing packages from requirements.txt...
+    echo This may take a few minutes...
+    echo.
+    %PYTHON_CMD% -m pip install -r requirements.txt
+
+    if %ERRORLEVEL% EQU 0 (
+        echo.
+        echo Python packages installed successfully!
+    ) else (
+        echo.
+        echo Warning: Some packages may have failed to install.
+        echo The program may still work, but check for errors above.
+    )
+) else (
+    echo Warning: requirements.txt not found!
+)
+
 echo.
 echo ============================================================================
-echo Setup script finished
+pause
+
+REM Step 3: Create directories
+echo.
+echo [3/3] Creating directories...
+echo ----------------------------------------------------------------------------
+
+if not exist "data_output" mkdir data_output && echo Created: data_output/
+if not exist "data_backup" mkdir data_backup && echo Created: data_backup/
+
+echo.
+echo ============================================================================
+echo.
+echo SETUP COMPLETE!
+echo ============================================================================
+echo.
+echo Your CAPER Suite is ready to use!
+echo.
+echo IMPORTANT: Please restart your computer before running tasks
+echo            for the first time (this ensures VB6 Runtime is properly loaded).
+echo.
+echo To launch the GUI, simply double-click: launch.bat
+echo.
 echo ============================================================================
 echo.
 pause
