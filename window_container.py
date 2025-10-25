@@ -131,7 +131,7 @@ class WindowContainer:
                 return True  # Continue enumeration
 
             # Wait for window to be created with multiple attempts
-            print("Searching for task window...")
+            print("Searching for task windows...")
             max_attempts = 30
             for attempt in range(max_attempts):
                 found_windows.clear()
@@ -145,8 +145,43 @@ class WindowContainer:
                 user32.EnumWindows(EnumWindowsProc(enum_windows_callback), 0)
 
                 if found_windows:
-                    self.hwnd = found_windows[0]  # Use first found window
-                    print(f"Found window (handle: {self.hwnd})")
+                    # Found window(s) for this process
+                    print(f"Found {len(found_windows)} window(s) for process {self.process.pid}")
+
+                    # Get details about each window
+                    for i, hwnd in enumerate(found_windows):
+                        # Get window title
+                        title_length = user32.GetWindowTextLengthW(hwnd)
+                        title = ""
+                        if title_length > 0:
+                            title_buffer = ctypes.create_unicode_buffer(title_length + 1)
+                            user32.GetWindowTextW(hwnd, title_buffer, title_length + 1)
+                            title = title_buffer.value
+
+                        # Get class name
+                        class_buffer = ctypes.create_unicode_buffer(256)
+                        user32.GetClassNameW(hwnd, class_buffer, 256)
+                        class_name = class_buffer.value
+
+                        # Get window rect
+                        rect = wintypes.RECT()
+                        user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                        width = rect.right - rect.left
+                        height = rect.bottom - rect.top
+
+                        print(f"  Window {i+1}: title='{title}', class='{class_name}', size={width}x{height}, pos=({rect.left},{rect.top})")
+
+                        # Prefer windows with actual size
+                        if width > 0 and height > 0:
+                            print(f"  → Using this window (has non-zero size)")
+                            self.hwnd = hwnd
+                            break
+
+                    # If we didn't find a window with size, use the first one
+                    if not self.hwnd:
+                        self.hwnd = found_windows[0]
+                        print(f"  → Using first window (all had 0x0 size)")
+
                     break
 
                 time.sleep(0.1)
