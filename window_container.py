@@ -158,6 +158,41 @@ class WindowContainer:
 
                 print(f"Screen dimensions: {screen_width}x{screen_height}")
 
+                # The window we found might be a parent/container. Check for child windows
+                print("Checking for child windows (VB6 forms are often child windows)...")
+                child_windows = []
+
+                def enum_child_callback(hwnd, lParam):
+                    if user32.IsWindowVisible(hwnd):
+                        # Get class name to identify VB6 windows
+                        class_name = ctypes.create_unicode_buffer(256)
+                        user32.GetClassNameW(hwnd, class_name, 256)
+
+                        # Get window rect
+                        rect = wintypes.RECT()
+                        user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                        width = rect.right - rect.left
+                        height = rect.bottom - rect.top
+
+                        child_windows.append({
+                            'hwnd': hwnd,
+                            'class': class_name.value,
+                            'width': width,
+                            'height': height
+                        })
+                        print(f"  Found child: class='{class_name.value}', size={width}x{height}")
+                    return True
+
+                EnumChildProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+                user32.EnumChildWindows(self.hwnd, EnumChildProc(enum_child_callback), 0)
+
+                # If we found a child window with actual size, use that instead
+                for child in child_windows:
+                    if child['width'] > 0 and child['height'] > 0:
+                        print(f"✓ Using child window with size {child['width']}x{child['height']}")
+                        self.hwnd = child['hwnd']
+                        break
+
                 # Force window to show and update
                 SW_SHOW = 5
                 SW_RESTORE = 9
@@ -178,7 +213,7 @@ class WindowContainer:
                 max_wait_attempts = 40  # 4 seconds
 
                 while (current_width == 0 or current_height == 0) and wait_attempts < max_wait_attempts:
-                    # Try to get window rect
+                    # Try GetWindowRect
                     rect = wintypes.RECT()
                     result = user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
 
@@ -186,17 +221,25 @@ class WindowContainer:
                         current_width = rect.right - rect.left
                         current_height = rect.bottom - rect.top
 
-                        print(f"  Attempt {wait_attempts + 1}: GetWindowRect returned {current_width}x{current_height} (rect: {rect.left},{rect.top},{rect.right},{rect.bottom})")
+                        # Also try GetClientRect (for VB6 forms this might give the actual size)
+                        client_rect = wintypes.RECT()
+                        user32.GetClientRect(self.hwnd, ctypes.byref(client_rect))
+                        client_width = client_rect.right - client_rect.left
+                        client_height = client_rect.bottom - client_rect.top
+
+                        print(f"  Attempt {wait_attempts + 1}: GetWindowRect={current_width}x{current_height}, GetClientRect={client_width}x{client_height}")
+
+                        # Use client rect if window rect is 0x0 but client rect has size
+                        if current_width == 0 and client_width > 0:
+                            print(f"  → Using client rect size instead")
+                            current_width = client_width
+                            current_height = client_height
 
                         if current_width > 0 and current_height > 0:
                             print(f"✓ Window rendered with size: {current_width}x{current_height}")
                             break
                     else:
                         print(f"  Attempt {wait_attempts + 1}: GetWindowRect failed")
-
-                    # Also try checking if window is visible
-                    is_visible = user32.IsWindowVisible(self.hwnd)
-                    print(f"    Window visible: {bool(is_visible)}")
 
                     wait_attempts += 1
                     time.sleep(0.1)
