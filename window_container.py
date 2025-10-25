@@ -158,29 +158,53 @@ class WindowContainer:
 
                 print(f"Screen dimensions: {screen_width}x{screen_height}")
 
+                # Force window to show and update
+                SW_SHOW = 5
+                SW_RESTORE = 9
+                print("Forcing window to show...")
+                user32.ShowWindow(self.hwnd, SW_RESTORE)
+                user32.ShowWindow(self.hwnd, SW_SHOW)
+                user32.UpdateWindow(self.hwnd)
+                user32.SetForegroundWindow(self.hwnd)
+
+                # Give it a moment to actually render
+                time.sleep(0.5)
+
                 # Wait for the window to have a valid size (not 0x0)
                 print("Waiting for window to render...")
                 current_width = 0
                 current_height = 0
                 wait_attempts = 0
-                max_wait_attempts = 30  # 3 seconds
+                max_wait_attempts = 40  # 4 seconds
 
                 while (current_width == 0 or current_height == 0) and wait_attempts < max_wait_attempts:
+                    # Try to get window rect
                     rect = wintypes.RECT()
-                    user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
-                    current_width = rect.right - rect.left
-                    current_height = rect.bottom - rect.top
+                    result = user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
 
-                    if current_width > 0 and current_height > 0:
-                        print(f"✓ Window rendered with size: {current_width}x{current_height}")
-                        break
+                    if result:
+                        current_width = rect.right - rect.left
+                        current_height = rect.bottom - rect.top
+
+                        print(f"  Attempt {wait_attempts + 1}: GetWindowRect returned {current_width}x{current_height} (rect: {rect.left},{rect.top},{rect.right},{rect.bottom})")
+
+                        if current_width > 0 and current_height > 0:
+                            print(f"✓ Window rendered with size: {current_width}x{current_height}")
+                            break
+                    else:
+                        print(f"  Attempt {wait_attempts + 1}: GetWindowRect failed")
+
+                    # Also try checking if window is visible
+                    is_visible = user32.IsWindowVisible(self.hwnd)
+                    print(f"    Window visible: {bool(is_visible)}")
 
                     wait_attempts += 1
                     time.sleep(0.1)
 
                 if current_width == 0 or current_height == 0:
                     print(f"⚠ Window size still 0x0 after {wait_attempts} attempts")
-                    print("  Unable to center window - it may not be fully initialized")
+                    print(f"  This VB6 program may use an unusual window initialization")
+                    print(f"  The window will appear at its default position")
                     return
 
                 # Now position the window multiple times
