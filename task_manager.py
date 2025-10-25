@@ -119,33 +119,27 @@ class TaskManager:
         self._backup_task_data(task_id)
 
         try:
-            # Launch task in centered container window
-            # Container will automatically handle Windows vs Wine
-            print(f"\n✓ Launching {task['name']} in centered window...")
+            # Launch task - window will be automatically centered
+            print(f"\n✓ Launching {task['name']}...")
 
-            # Use threading to launch in container without blocking
-            import threading
+            success = launch_task_in_container(
+                task_name=task['name'],
+                exe_path=exe_path,
+                window_width=800,
+                window_height=600
+            )
 
-            def launch_thread():
-                try:
-                    launch_task_in_container(
-                        task_name=task['name'],
-                        exe_path=exe_path,
-                        window_width=800,
-                        window_height=600
-                    )
-                except Exception as e:
-                    print(f"\n✗ Error in task window: {e}")
-
-            thread = threading.Thread(target=launch_thread, daemon=True)
-            thread.start()
-
-            # Give it a moment to start
-            import time
-            time.sleep(1.0)
+            if not success:
+                print(f"\n✗ Task failed to start!")
+                print(f"\nThis is likely caused by missing Visual Basic 6.0 runtime libraries.")
+                print(f"\nTo fix this:")
+                print(f"  1. Check dependencies: python scripts/check_vb6_dependencies.py")
+                print(f"  2. Install VB6 Runtime: Run vbrun60sp6.exe as Administrator")
+                print(f"\nSee TROUBLESHOOTING.md for detailed instructions.")
+                return False
 
             print(f"\n✓ Task launched successfully!")
-            print(f"The task will appear in a centered window on your screen.")
+            print(f"The task window will appear centered on your screen.")
             print(f"Data will be saved to: {exe_path.parent}")
 
             # Display post-run instructions
