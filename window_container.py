@@ -158,22 +158,45 @@ class WindowContainer:
 
                 print(f"Screen dimensions: {screen_width}x{screen_height}")
 
-                # Try to position the window multiple times
-                # (VB6 apps sometimes reposition themselves during initialization)
-                for reposition_attempt in range(3):
-                    # Get the current window size
+                # Wait for the window to have a valid size (not 0x0)
+                print("Waiting for window to render...")
+                current_width = 0
+                current_height = 0
+                wait_attempts = 0
+                max_wait_attempts = 30  # 3 seconds
+
+                while (current_width == 0 or current_height == 0) and wait_attempts < max_wait_attempts:
                     rect = wintypes.RECT()
                     user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
                     current_width = rect.right - rect.left
                     current_height = rect.bottom - rect.top
 
-                    print(f"Window size: {current_width}x{current_height}")
+                    if current_width > 0 and current_height > 0:
+                        print(f"✓ Window rendered with size: {current_width}x{current_height}")
+                        break
+
+                    wait_attempts += 1
+                    time.sleep(0.1)
+
+                if current_width == 0 or current_height == 0:
+                    print(f"⚠ Window size still 0x0 after {wait_attempts} attempts")
+                    print("  Unable to center window - it may not be fully initialized")
+                    return
+
+                # Now position the window multiple times
+                # (VB6 apps sometimes reposition themselves during initialization)
+                for reposition_attempt in range(3):
+                    # Get the current window size (may have changed)
+                    rect = wintypes.RECT()
+                    user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
+                    current_width = rect.right - rect.left
+                    current_height = rect.bottom - rect.top
 
                     # Calculate centered position
                     x = (screen_width - current_width) // 2
                     y = (screen_height - current_height) // 2
 
-                    print(f"Centering window at position: ({x}, {y})")
+                    print(f"Positioning attempt {reposition_attempt + 1}: centering {current_width}x{current_height} window at ({x}, {y})")
 
                     # Position the window in the center
                     SWP_NOZORDER = 0x0004
@@ -191,18 +214,24 @@ class WindowContainer:
                     )
 
                     if result:
-                        print(f"✓ Window positioned successfully (attempt {reposition_attempt + 1})")
+                        print(f"  ✓ SetWindowPos succeeded")
                     else:
-                        print(f"⚠ SetWindowPos returned 0 (attempt {reposition_attempt + 1})")
+                        error = ctypes.get_last_error()
+                        print(f"  ✗ SetWindowPos failed with error: {error}")
 
                     # Bring window to foreground
                     user32.SetForegroundWindow(self.hwnd)
 
                     # Wait a bit before trying again
                     if reposition_attempt < 2:
-                        time.sleep(0.3)
+                        time.sleep(0.4)
 
-                print("✓ Window centering complete")
+                # Verify final position
+                rect = wintypes.RECT()
+                user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
+                final_x = rect.left
+                final_y = rect.top
+                print(f"✓ Window centering complete - final position: ({final_x}, {final_y})")
 
             else:
                 print("⚠ Could not find task window - it may still be starting")
