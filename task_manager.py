@@ -11,6 +11,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 import config
+from window_container import launch_task_in_container
 
 
 class TaskManager:
@@ -118,40 +119,34 @@ class TaskManager:
         self._backup_task_data(task_id)
 
         try:
-            if self.is_windows:
-                # Windows: Direct execution
-                process = subprocess.Popen([str(exe_path)], cwd=str(exe_path.parent))
+            # Launch task in centered container window
+            # Container will automatically handle Windows vs Wine
+            print(f"\n✓ Launching {task['name']} in centered window...")
 
-                # Give the process a moment to start and check for immediate failures
-                import time
-                time.sleep(0.5)
+            # Use threading to launch in container without blocking
+            import threading
 
-                # Check if process is still running
-                if process.poll() is not None:
-                    # Process terminated immediately - likely a DLL error
-                    print(f"\n✗ Task failed to start!")
-                    print(f"\nThis is likely caused by missing Visual Basic 6.0 runtime libraries.")
-                    print(f"\nCommon error: 'System Error &H8007007E - Module not found'")
-                    print(f"\nTo fix this:")
-                    print(f"  1. Check dependencies: python scripts/check_vb6_dependencies.py")
-                    print(f"  2. Install VB6 Runtime: python scripts/install_vb6_runtime.py (as Administrator)")
-                    print(f"\nSee QUICK_FIX_MODULE_NOT_FOUND.txt for detailed instructions.")
-                    return False
+            def launch_thread():
+                try:
+                    launch_task_in_container(
+                        task_name=task['name'],
+                        exe_path=exe_path,
+                        window_width=800,
+                        window_height=600
+                    )
+                except Exception as e:
+                    print(f"\n✗ Error in task window: {e}")
 
-                print(f"\n✓ Task launched successfully!")
-                print(f"The task is now running in a separate window.")
-                print(f"Data will be saved to: {exe_path.parent}")
-            else:
-                # Linux/Mac: Use Wine
-                wine_path = shutil.which("wine")
-                if not wine_path:
-                    print("Error: Wine not found. Please install Wine to run Windows applications.")
-                    return False
+            thread = threading.Thread(target=launch_thread, daemon=True)
+            thread.start()
 
-                subprocess.Popen([wine_path, str(exe_path)], cwd=str(exe_path.parent))
-                print(f"\n✓ Task launched successfully with Wine!")
-                print(f"The task is now running in a separate window.")
-                print(f"Data will be saved to: {exe_path.parent}")
+            # Give it a moment to start
+            import time
+            time.sleep(1.0)
+
+            print(f"\n✓ Task launched successfully!")
+            print(f"The task will appear in a centered window on your screen.")
+            print(f"Data will be saved to: {exe_path.parent}")
 
             # Display post-run instructions
             print(f"\nNOTE: After completing the task:")
@@ -178,13 +173,14 @@ class TaskManager:
             print(f"\nThis is likely caused by missing system libraries.")
             print(f"\nTo fix this:")
             print(f"  1. Check dependencies: python scripts/check_vb6_dependencies.py")
-            print(f"  2. Install VB6 Runtime: python scripts/install_vb6_runtime.py (as Administrator)")
-            print(f"\nSee QUICK_FIX_MODULE_NOT_FOUND.txt for detailed instructions.")
+            print(f"  2. Install VB6 Runtime: Run vbrun60sp6.exe as Administrator")
+            print(f"\nSee TROUBLESHOOTING.md for detailed instructions.")
             return False
         except Exception as e:
             print(f"\n✗ Error launching task: {e}")
             print(f"\nIf you see 'module not found' or similar errors:")
             print(f"  Run: python scripts/check_vb6_dependencies.py")
+            print(f"  Install VB6 Runtime: vbrun60sp6.exe")
             return False
 
     def _backup_task_data(self, task_id):
