@@ -1,6 +1,9 @@
 @echo off
 REM CAPER Suite - GUI Launcher for Windows
 
+REM Change to the directory where this batch file is located
+cd /d "%~dp0"
+
 echo ====================================
 echo CAPER Suite - GUI Launcher
 echo ====================================
