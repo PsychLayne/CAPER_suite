@@ -155,8 +155,8 @@ class PsychologyClientGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("CAPER Suite - Psychology Research Task Launcher")
-        self.root.geometry("1100x700")
-        self.root.minsize(900, 600)
+        self.root.geometry("1024x768")
+        self.root.minsize(1024, 768)
 
         # Initialize task manager
         self.task_manager = TaskManager()
@@ -175,6 +175,12 @@ class PsychologyClientGUI:
         # Center window
         self.center_window()
 
+        # Enable fullscreen mode
+        self.root.attributes('-fullscreen', True)
+
+        # Bind ESC key to exit fullscreen
+        self.root.bind('<Escape>', self.toggle_fullscreen)
+
     def setup_styles(self):
         """Configure custom styles"""
         style = ttk.Style()
@@ -182,7 +188,7 @@ class PsychologyClientGUI:
 
         # Configure notebook (tabs)
         style.configure('TNotebook', background='#ECF0F1', borderwidth=0)
-        style.configure('TNotebook.Tab', padding=[20, 10], font=('Segoe UI', 10))
+        style.configure('TNotebook.Tab', padding=[15, 8], font=('Segoe UI', 9))
         style.map('TNotebook.Tab', background=[('selected', '#4A90E2')],
                  foreground=[('selected', 'white')])
 
@@ -195,36 +201,42 @@ class PsychologyClientGUI:
         y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f'{width}x{height}+{x}+{y}')
 
+    def toggle_fullscreen(self, event=None):
+        """Toggle fullscreen mode on/off"""
+        current_state = self.root.attributes('-fullscreen')
+        self.root.attributes('-fullscreen', not current_state)
+        return "break"
+
     def create_header(self):
         """Create application header"""
-        header = tk.Frame(self.root, bg="#2C3E50", height=80)
+        header = tk.Frame(self.root, bg="#2C3E50", height=65)
         header.pack(fill="x", side="top")
         header.pack_propagate(False)
 
         # Title
         title = tk.Label(header, text="🧠 CAPER Suite",
-                        font=("Segoe UI", 24, "bold"),
+                        font=("Segoe UI", 20, "bold"),
                         bg="#2C3E50", fg="white")
-        title.pack(side="left", padx=30, pady=20)
+        title.pack(side="left", padx=20, pady=15)
 
         # Subtitle
         subtitle = tk.Label(header,
                            text="Comprehensive Assessment Platform for Experimental Research",
-                           font=("Segoe UI", 10), bg="#2C3E50", fg="#BDC3C7")
-        subtitle.pack(side="left", padx=(0, 30))
+                           font=("Segoe UI", 9), bg="#2C3E50", fg="#BDC3C7")
+        subtitle.pack(side="left", padx=(0, 20))
 
         # System status
         self.system_status_label = tk.Label(header, text="",
-                                           font=("Segoe UI", 9),
+                                           font=("Segoe UI", 8),
                                            bg="#2C3E50", fg="#27AE60")
-        self.system_status_label.pack(side="right", padx=30)
+        self.system_status_label.pack(side="right", padx=20)
         self.update_system_status()
 
     def create_main_content(self):
         """Create main content area with tabs"""
         # Notebook for tabs
         self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
+        self.notebook.pack(fill="both", expand=True, padx=5, pady=5)
 
         # Create tabs
         self.create_tasks_tab()
@@ -287,8 +299,8 @@ class PsychologyClientGUI:
             for task_name in category_data["tasks"]:
                 if task_name in self.TASKS:
                     card = TaskCard(cards_frame, task_name, self.TASKS[task_name],
-                                  self.task_manager, width=280)
-                    card.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
+                                  self.task_manager, width=300)
+                    card.grid(row=row, column=col, padx=8, pady=8, sticky="nsew")
                     col += 1
                     if col >= 3:  # 3 cards per row
                         col = 0
@@ -563,21 +575,21 @@ Version: 2.0
 
     def create_footer(self):
         """Create application footer"""
-        footer = tk.Frame(self.root, bg="#34495E", height=40)
+        footer = tk.Frame(self.root, bg="#34495E", height=30)
         footer.pack(fill="x", side="bottom")
         footer.pack_propagate(False)
 
         # Status message
-        self.status_label = tk.Label(footer, text="Ready",
-                                    font=("Segoe UI", 9),
+        self.status_label = tk.Label(footer, text="Ready | Press ESC to exit fullscreen",
+                                    font=("Segoe UI", 8),
                                     bg="#34495E", fg="white")
-        self.status_label.pack(side="left", padx=20)
+        self.status_label.pack(side="left", padx=15)
 
         # Version
         version_label = tk.Label(footer, text="CAPER Suite v2.0",
-                                font=("Segoe UI", 9),
+                                font=("Segoe UI", 8),
                                 bg="#34495E", fg="#BDC3C7")
-        version_label.pack(side="right", padx=20)
+        version_label.pack(side="right", padx=15)
 
     def update_system_status(self):
         """Update system status in header"""
