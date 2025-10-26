@@ -38,24 +38,22 @@ class WindowContainer:
             # On Linux/Mac, just launch with Wine normally
             return self._launch_with_wine()
 
-        # Create fullscreen container
+        # Create compact control panel
         self.root = tk.Tk()
         self.root.title(f"CAPER Suite - {self.task_name}")
 
-        # Make it fullscreen and borderless
-        self.root.attributes('-fullscreen', True)
-        self.root.attributes('-topmost', False)  # Don't stay on top - let VB6 window appear above
+        # Make it a bar at the top of the screen
+        screen_width = self.root.winfo_screenwidth()
+        bar_height = 60
+        self.root.geometry(f"{screen_width}x{bar_height}+0+0")
+
+        # Borderless and stays on top (just the control bar)
+        self.root.overrideredirect(True)
+        self.root.attributes('-topmost', True)
 
         # Dark background
-        self.root.configure(bg='#1a1a1a')
-
-        # Send to back so VB6 window appears in front
-        self.root.update()
-        self.root.lower()
-
-        # Info panel at top
-        info_frame = tk.Frame(self.root, bg='#2C3E50', height=60)
-        info_frame.pack(side='top', fill='x')
+        info_frame = tk.Frame(self.root, bg='#2C3E50', height=bar_height)
+        info_frame.pack(fill='both', expand=True)
         info_frame.pack_propagate(False)
 
         # Task name
@@ -170,8 +168,12 @@ class WindowContainer:
                         screen_width = user32.GetSystemMetrics(0)
                         screen_height = user32.GetSystemMetrics(1)
 
+                        # Center horizontally, and vertically in the space below the control bar
+                        control_bar_height = 60
+                        available_height = screen_height - control_bar_height
+
                         x = (screen_width - win['width']) // 2
-                        y = (screen_height - win['height']) // 2
+                        y = control_bar_height + (available_height - win['height']) // 2
 
                         # Only move if it's not already centered (within 10 pixels)
                         if abs(win['left'] - x) > 10 or abs(win['top'] - y) > 10:
