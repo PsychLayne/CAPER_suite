@@ -115,84 +115,98 @@ class WindowContainer:
             # Windows API functions
             user32 = ctypes.windll.user32
 
-            # Search for ALL visible windows with a title, created around the same time
-            print("Searching all visible windows for VB6 form...")
-            all_visible_windows = []
+            # Keep searching for the window - VB6 forms take time to appear
+            print("Searching for VB6 form window...")
+            max_search_attempts = 30  # 3 seconds
 
-            def enum_all_windows_callback(hwnd, lParam):
-                """Find all visible windows with titles"""
-                if user32.IsWindowVisible(hwnd):
-                    title_length = user32.GetWindowTextLengthW(hwnd)
-                    if title_length > 0:
-                        # Get title
-                        title_buffer = ctypes.create_unicode_buffer(title_length + 1)
-                        user32.GetWindowTextW(hwnd, title_buffer, title_length + 1)
-                        title = title_buffer.value
+            for search_attempt in range(max_search_attempts):
+                all_visible_windows = []
 
-                        # Get class name
-                        class_buffer = ctypes.create_unicode_buffer(256)
-                        user32.GetClassNameW(hwnd, class_buffer, 256)
-                        class_name = class_buffer.value
+                def enum_all_windows_callback(hwnd, lParam):
+                    """Find all visible windows with titles"""
+                    if user32.IsWindowVisible(hwnd):
+                        title_length = user32.GetWindowTextLengthW(hwnd)
+                        if title_length > 0:
+                            # Get title
+                            title_buffer = ctypes.create_unicode_buffer(title_length + 1)
+                            user32.GetWindowTextW(hwnd, title_buffer, title_length + 1)
+                            title = title_buffer.value
 
-                        # Get window rect
-                        rect = wintypes.RECT()
-                        user32.GetWindowRect(hwnd, ctypes.byref(rect))
-                        width = rect.right - rect.left
-                        height = rect.bottom - rect.top
+                            # Get class name
+                            class_buffer = ctypes.create_unicode_buffer(256)
+                            user32.GetClassNameW(hwnd, class_buffer, 256)
+                            class_name = class_buffer.value
 
-                        # Only consider windows with actual size and VB6-related classes
-                        if width > 0 and height > 0 and ('Thunder' in class_name or 'BART' in title):
-                            all_visible_windows.append({
-                                'hwnd': hwnd,
-                                'title': title,
-                                'class': class_name,
-                                'width': width,
-                                'height': height,
-                                'left': rect.left,
-                                'top': rect.top
-                            })
-                return True
+                            # Get window rect
+                            rect = wintypes.RECT()
+                            user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                            width = rect.right - rect.left
+                            height = rect.bottom - rect.top
 
-            # Enumerate all windows
-            EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
-            user32.EnumWindows(EnumWindowsProc(enum_all_windows_callback), 0)
+                            # Only consider windows with actual size and VB6-related classes
+                            if width > 0 and height > 0 and ('Thunder' in class_name or 'BART' in title or 'PASAT' in title or 'Mirror' in title):
+                                all_visible_windows.append({
+                                    'hwnd': hwnd,
+                                    'title': title,
+                                    'class': class_name,
+                                    'width': width,
+                                    'height': height,
+                                    'left': rect.left,
+                                    'top': rect.top
+                                })
+                    return True
 
-            # Show what we found
-            if all_visible_windows:
-                print(f"Found {len(all_visible_windows)} VB6/BART window(s):")
-                for i, win in enumerate(all_visible_windows):
-                    print(f"  {i+1}. '{win['title']}' ({win['class']}) - {win['width']}x{win['height']} at ({win['left']},{win['top']})")
+                # Enumerate all windows
+                EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+                user32.EnumWindows(EnumWindowsProc(enum_all_windows_callback), 0)
 
-                # Use the first one with matching title
-                for win in all_visible_windows:
-                    if self.task_name.replace(' - ', '_').replace(' ', '_') in win['title'] or 'BART' in win['title']:
-                        print(f"✓ Found matching window: '{win['title']}'")
-                        self.hwnd = win['hwnd']
+                # Check if we found any matching windows
+                if all_visible_windows:
+                    print(f"Found {len(all_visible_windows)} VB6 window(s) on attempt {search_attempt + 1}:")
+                    for i, win in enumerate(all_visible_windows):
+                        print(f"  {i+1}. '{win['title']}' ({win['class']}) - {win['width']}x{win['height']} at ({win['left']},{win['top']})")
 
-                        # Get screen dimensions
-                        screen_width = user32.GetSystemMetrics(0)
-                        screen_height = user32.GetSystemMetrics(1)
+                    # Look for a matching window
+                    for win in all_visible_windows:
+                        # Match by task name or common keywords
+                        task_keywords = self.task_name.upper().replace(' - ', ' ').replace('_', ' ').split()
+                        title_upper = win['title'].upper()
 
-                        # Calculate center position
-                        x = (screen_width - win['width']) // 2
-                        y = (screen_height - win['height']) // 2
+                        # Check if any keyword matches
+                        if any(keyword in title_upper for keyword in task_keywords) or 'Thunder' in win['class']:
+                            print(f"✓ Found matching window: '{win['title']}'")
+                            self.hwnd = win['hwnd']
 
-                        print(f"Centering {win['width']}x{win['height']} window at ({x}, {y})")
+                            # Get screen dimensions
+                            screen_width = user32.GetSystemMetrics(0)
+                            screen_height = user32.GetSystemMetrics(1)
 
-                        # Move window to center
-                        result = user32.SetWindowPos(
-                            self.hwnd, 0, x, y, 0, 0,
-                            0x0004 | 0x0001 | 0x0040  # NOZORDER | NOSIZE | SHOWWINDOW
-                        )
+                            # Calculate center position
+                            x = (screen_width - win['width']) // 2
+                            y = (screen_height - win['height']) // 2
 
-                        if result:
-                            print("✓ Window centered successfully!")
+                            print(f"Centering {win['width']}x{win['height']} window at ({x}, {y})")
 
-                        user32.SetForegroundWindow(self.hwnd)
-                        return
+                            # Move window to center
+                            result = user32.SetWindowPos(
+                                self.hwnd, 0, x, y, 0, 0,
+                                0x0004 | 0x0001 | 0x0040  # NOZORDER | NOSIZE | SHOWWINDOW
+                            )
 
-            print("⚠ No matching VB6 form windows found")
-            print("  The VB6 program may use an unconventional window structure")
+                            if result:
+                                print("✓ Window centered successfully!")
+                            else:
+                                error = ctypes.get_last_error()
+                                print(f"⚠ SetWindowPos failed with error: {error}")
+
+                            user32.SetForegroundWindow(self.hwnd)
+                            return
+
+                # Wait before trying again
+                time.sleep(0.1)
+
+            print("⚠ No matching VB6 form windows found after 3 seconds")
+            print("  The window may have already appeared at its default position")
 
         except Exception as e:
             print(f"⚠ Error during window positioning: {e}")
