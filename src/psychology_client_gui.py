@@ -188,8 +188,8 @@ class PsychologyClientGUI:
 
         # Create main layout
         self.create_header()
-        self.create_carousel()
-        self.create_footer()
+        self.create_footer()  # Create footer first so counter_label exists
+        self.create_carousel()  # This calls update_counter() which needs counter_label
 
         # Center window
         self.center_window()
