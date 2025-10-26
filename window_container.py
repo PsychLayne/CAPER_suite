@@ -49,6 +49,10 @@ class WindowContainer:
         # Dark background
         self.root.configure(bg='#1a1a1a')
 
+        # Send to back so VB6 window appears in front
+        self.root.update()
+        self.root.lower()
+
         # Info panel at top
         info_frame = tk.Frame(self.root, bg='#2C3E50', height=60)
         info_frame.pack(side='top', fill='x')
@@ -171,12 +175,26 @@ class WindowContainer:
 
                         # Only move if it's not already centered (within 10 pixels)
                         if abs(win['left'] - x) > 10 or abs(win['top'] - y) > 10:
-                            user32.SetWindowPos(
+                            print(f"Found '{win['title']}' at ({win['left']},{win['top']}) - moving to ({x},{y})")
+
+                            result = user32.SetWindowPos(
                                 win['hwnd'], -1, x, y, 0, 0,  # -1 = HWND_TOPMOST
                                 0x0001 | 0x0040  # NOSIZE | SHOWWINDOW
                             )
-                            print(f"✓ Centered '{win['title']}' ({win['width']}x{win['height']}) at ({x},{y})")
+
+                            if result:
+                                print(f"✓ Centered '{win['title']}' ({win['width']}x{win['height']})")
+                            else:
+                                error = ctypes.get_last_error()
+                                print(f"✗ SetWindowPos failed with error {error}")
+
                             self.hwnd = win['hwnd']
+                        else:
+                            # Already centered, just ensure it stays on top
+                            if not self.hwnd or self.hwnd != win['hwnd']:
+                                print(f"✓ Found centered window: '{win['title']}' ({win['width']}x{win['height']})")
+                                self.hwnd = win['hwnd']
+                                user32.SetWindowPos(win['hwnd'], -1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0040)  # NOSIZE | NOMOVE | SHOWWINDOW, keep topmost
 
                 time.sleep(0.3)
 
