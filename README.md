@@ -348,46 +348,75 @@ Once launched, you'll see a main menu with these options:
 
 ```
 CAPER_suite/
-├── psychology_client.py      # Main client application
-├── task_manager.py           # Task execution handler
-├── config.py                 # Task configuration
-├── setup.py                  # One-button setup script
+├── README.md                 # Main documentation
+├── TROUBLESHOOTING.md        # Troubleshooting guide
 ├── requirements.txt          # Python dependencies
-├── run.bat                   # Windows launcher
-├── run.sh                    # Linux/Mac launcher
-├── README.md                 # This file
+├── .gitignore                # Git ignore patterns
 │
-├── data_output/              # Exported data files
-├── data_backup/              # Automatic backups
+├── setup.bat                 # One-button setup (Windows)
+├── run.bat                   # CLI launcher (Windows)
+├── run.sh                    # CLI launcher (Linux/Mac)
+├── run_gui.bat               # GUI launcher (Windows)
+├── run_gui.sh                # GUI launcher (Linux/Mac)
 │
-├── PASAT/                    # PASAT Standard task
-│   ├── PASAT_Stnd.exe
-│   ├── PASAT_Stnd.mdb
-│   └── ...
+├── src/                      # Python source code
+│   ├── psychology_client.py      # Main CLI application
+│   ├── psychology_client_gui.py  # Main GUI application
+│   ├── task_manager.py           # Task execution handler
+│   ├── config.py                 # Task configuration
+│   ├── launch_gui_1024.py        # GUI with resolution management
+│   └── resolution_trick.py       # Resolution utilities
 │
-├── PASAT_7550/              # PASAT 7550 variant
-│   └── ...
+├── installers/               # Installation files
+│   └── vbrun60sp6.exe           # VB6 Runtime installer
 │
-├── bart_auto/               # BART Automatic
-│   └── ...
+├── tasks/                    # Psychology task applications
+│   ├── PASAT/                    # PASAT Standard task
+│   │   ├── PASAT_Stnd.exe
+│   │   ├── PASAT_Stnd.mdb
+│   │   └── ...
+│   │
+│   ├── PASAT_7550/              # PASAT 7550 variant
+│   │   └── ...
+│   │
+│   ├── bart_auto/               # BART Automatic
+│   │   └── ...
+│   │
+│   ├── bart_adol/               # BART Adolescent
+│   │   └── ...
+│   │
+│   ├── bart_options/            # BART Options
+│   │   └── ...
+│   │
+│   ├── BART_Options_P/          # BART Options P
+│   │   └── ...
+│   │
+│   ├── BART_BAIT/               # BART BAIT
+│   │   └── ...
+│   │
+│   ├── BIRD_Basic/              # BIRD Basic task
+│   │   └── ...
+│   │
+│   └── MT/                      # Mirror Task
+│       ├── Mirror b5.exe
+│       ├── MIRROROUT.TXT
+│       ├── CODEBOOK.TXT
+│       └── ...
 │
-├── bart_adol/               # BART Adolescent
-│   └── ...
+├── docs/                     # Documentation files
+│   ├── FIX_VB6_RUNTIME.md
+│   ├── GUI_README.md
+│   ├── PYTHON_NOT_FOUND.md
+│   ├── VB6_DOWNLOAD_SOURCES.md
+│   └── WINDOWS_DEFENDER_FALSE_POSITIVE.md
 │
-├── bart_options/            # BART Options
-│   └── ...
+├── scripts/                  # Utility scripts
+│   ├── add_windows_defender_exclusion.ps1
+│   ├── check_vb6_dependencies.bat
+│   └── check_vb6_dependencies.py
 │
-├── BART_Options_P/          # BART Options P
-│   └── ...
-│
-├── BART_BAIT/               # BART BAIT
-│   └── ...
-│
-└── MT/                      # Mirror Task
-    ├── Mirror b5.exe
-    ├── MIRROROUT.TXT
-    ├── CODEBOOK.TXT
-    └── ...
+├── data_output/              # Exported data files (created automatically)
+└── data_backup/              # Automatic backups (created automatically)
 ```
 
 ---

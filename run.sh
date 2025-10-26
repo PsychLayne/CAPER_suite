@@ -65,7 +65,7 @@ $PYTHON_CMD --version
 echo ""
 
 # Check if psychology_client.py exists
-if [ ! -f "$SCRIPT_DIR/psychology_client.py" ]; then
+if [ ! -f "$SCRIPT_DIR/src/psychology_client.py" ]; then
     echo "ERROR: psychology_client.py not found!"
     echo "Make sure you're running this script from the CAPER_suite directory"
     echo ""
@@ -76,7 +76,7 @@ fi
 # Launch the client
 echo "Starting Psychology Client..."
 echo ""
-$PYTHON_CMD "$SCRIPT_DIR/psychology_client.py"
+$PYTHON_CMD "$SCRIPT_DIR/src/psychology_client.py"
 
 # Check exit code
 EXIT_CODE=$?

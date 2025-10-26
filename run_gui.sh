@@ -62,7 +62,10 @@ echo ""
 # Launch the GUI
 echo "Launching CAPER Suite GUI..."
 echo ""
-$PYTHON_CMD psychology_client_gui.py
+echo "NOTE: Screen will change to 1024x768 for optimal task display"
+echo "      Resolution will be restored when you close the GUI"
+echo ""
+$PYTHON_CMD src/launch_gui_1024.py
 
 # Check exit status
 if [ $? -ne 0 ]; then
