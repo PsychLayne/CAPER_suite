@@ -369,9 +369,24 @@ class PsychologyClientGUI:
 
 def main():
     """Main entry point"""
-    root = tk.Tk()
-    app = PsychologyClientGUI(root)
-    root.mainloop()
+    try:
+        root = tk.Tk()
+        app = PsychologyClientGUI(root)
+        root.mainloop()
+    except Exception as e:
+        # Show error in a message box
+        import traceback
+        error_msg = f"Error starting CAPER Suite GUI:\n\n{str(e)}\n\n{traceback.format_exc()}"
+        try:
+            import tkinter.messagebox as mb
+            root = tk.Tk()
+            root.withdraw()
+            mb.showerror("CAPER Suite - Error", error_msg)
+        except:
+            # If tkinter fails, print to console
+            print(error_msg)
+            input("\nPress Enter to exit...")
+        raise
 
 
 if __name__ == "__main__":

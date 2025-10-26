@@ -101,9 +101,15 @@ def main():
         print("\nExiting...")
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"\n{'='*60}")
+        print(f"ERROR: Failed to launch GUI")
+        print(f"{'='*60}")
+        print(f"\nError: {e}")
+        print(f"\nFull traceback:")
         import traceback
         traceback.print_exc()
+        print(f"\n{'='*60}")
+        input("\nPress Enter to exit...")
 
     finally:
         # Always restore original resolution
