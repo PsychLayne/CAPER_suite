@@ -368,7 +368,7 @@ class PsychologyClientGUI:
 
 
 def main():
-    """Main entry point"""
+    """Main entry point - for standalone use without launcher"""
     try:
         root = tk.Tk()
         app = PsychologyClientGUI(root)
@@ -379,9 +379,10 @@ def main():
         error_msg = f"Error starting CAPER Suite GUI:\n\n{str(e)}\n\n{traceback.format_exc()}"
         try:
             import tkinter.messagebox as mb
-            root = tk.Tk()
-            root.withdraw()
+            error_root = tk.Tk()
+            error_root.withdraw()
             mb.showerror("CAPER Suite - Error", error_msg)
+            error_root.destroy()
         except:
             # If tkinter fails, print to console
             print(error_msg)
