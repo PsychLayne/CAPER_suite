@@ -47,12 +47,7 @@ class RetroTaskCard(tk.Frame):
         main_container = tk.Frame(self, bg=color_scheme["bg"])
         main_container.pack(fill="both", expand=True, padx=40, pady=40)
 
-        # Task name with retro shadow effect
-        name_shadow = tk.Label(main_container, text=task_name,
-                              font=("Arial", 32, "bold"),
-                              bg=color_scheme["bg"], fg="black")
-        name_shadow.place(x=52, y=22)
-
+        # Task name (removed shadow effect)
         name_label = tk.Label(main_container, text=task_name,
                              font=("Arial", 32, "bold"),
                              bg=color_scheme["bg"], fg=color_scheme["text"])
@@ -226,7 +221,7 @@ class PsychologyClientGUI:
 
     def create_header(self):
         """Create retro header"""
-        header = tk.Frame(self.root, bg="#000000", height=80)
+        header = tk.Frame(self.root, bg="#000000", height=100)
         header.pack(fill="x", side="top")
         header.pack_propagate(False)
 
@@ -242,18 +237,18 @@ class PsychologyClientGUI:
 
         # Title with retro computer font
         title_frame = tk.Frame(header, bg="#000000")
-        title_frame.pack(expand=True)
+        title_frame.pack(expand=True, pady=10)
 
         title = tk.Label(title_frame, text="★ CAPER SUITE ★",
                         font=("Courier", 28, "bold"),
                         bg="#000000", fg="#00FF00")
-        title.pack(pady=8)
+        title.pack(pady=(5, 3))
 
         subtitle = tk.Label(title_frame,
                            text=">> PSYCHOLOGY RESEARCH TASK LAUNCHER <<",
-                           font=("Courier", 10, "bold"),
+                           font=("Courier", 9, "bold"),
                            bg="#000000", fg="#00CED1")
-        subtitle.pack()
+        subtitle.pack(pady=(0, 5))
 
     def create_carousel(self):
         """Create task carousel with navigation"""
