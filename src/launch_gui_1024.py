@@ -8,7 +8,6 @@ import sys
 import ctypes
 from ctypes import wintypes
 import platform
-import atexit
 
 
 # Define DEVMODEW structure for changing resolution
@@ -85,25 +84,6 @@ def main():
     original_width, original_height = get_current_resolution()
     print(f"Current resolution: {original_width}x{original_height}")
 
-    # Define restoration function
-    def restore_resolution():
-        """Restore original resolution - called on exit"""
-        if original_width and original_height:
-            print(f"\nRestoring resolution to {original_width}x{original_height}...")
-            try:
-                if change_resolution(original_width, original_height):
-                    print("✓ Resolution restored successfully")
-                else:
-                    print("⚠ Could not restore resolution automatically")
-                    print(f"   Please manually change to {original_width}x{original_height}")
-                    print("   (Right-click desktop → Display settings → Resolution)")
-            except Exception as e:
-                print(f"⚠ Error restoring resolution: {e}")
-                print(f"   Please manually change to {original_width}x{original_height}")
-
-    # Register restoration function to run on exit (even if program crashes)
-    atexit.register(restore_resolution)
-
     # Change to 1024x768 for VB6 programs
     print("Changing to 1024x768 for optimal VB6 program display...")
     resolution_changed = False
@@ -114,13 +94,56 @@ def main():
         print("⚠ Could not change resolution, continuing at current resolution")
 
     try:
-        # Import and run the GUI
-        from psychology_client_gui import main as gui_main
+        # Import GUI module
+        from psychology_client_gui import PsychologyClientGUI
+        import tkinter as tk
+
         print("\nLaunching CAPER Suite GUI...\n")
-        gui_main()
+
+        # Create root window
+        root = tk.Tk()
+
+        # Create GUI app
+        app = PsychologyClientGUI(root)
+
+        # Bind restoration to window close
+        def on_closing():
+            """Called when window is closed"""
+            print("\nClosing GUI...")
+            if original_width and original_height and resolution_changed:
+                print(f"Restoring resolution to {original_width}x{original_height}...")
+                if change_resolution(original_width, original_height):
+                    print("✓ Resolution restored successfully")
+                else:
+                    print("⚠ Could not restore resolution")
+            root.destroy()
+
+        # Set up window close protocol
+        root.protocol("WM_DELETE_WINDOW", on_closing)
+
+        # Also bind ESC to trigger restoration
+        original_toggle = app.toggle_fullscreen
+        def toggle_with_restore(event=None):
+            result = original_toggle(event)
+            # If we're exiting fullscreen to close, restore resolution
+            return result
+        app.toggle_fullscreen = toggle_with_restore
+
+        # Run GUI
+        root.mainloop()
+
+        # Ensure restoration happens even if mainloop exits normally
+        if original_width and original_height and resolution_changed:
+            print(f"\nRestoring resolution to {original_width}x{original_height}...")
+            if change_resolution(original_width, original_height):
+                print("✓ Resolution restored")
 
     except KeyboardInterrupt:
         print("\nExiting...")
+        # Restore resolution
+        if original_width and original_height and resolution_changed:
+            print(f"Restoring resolution to {original_width}x{original_height}...")
+            change_resolution(original_width, original_height)
 
     except Exception as e:
         print(f"\n{'='*60}")
@@ -131,9 +154,13 @@ def main():
         import traceback
         traceback.print_exc()
         print(f"\n{'='*60}")
-        input("\nPress Enter to exit...")
 
-    # Note: atexit.register will automatically call restore_resolution()
+        # Restore resolution even on error
+        if original_width and original_height and resolution_changed:
+            print(f"\nRestoring resolution to {original_width}x{original_height}...")
+            change_resolution(original_width, original_height)
+
+        input("\nPress Enter to exit...")
 
 
 if __name__ == "__main__":
