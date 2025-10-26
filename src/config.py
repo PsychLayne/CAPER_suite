@@ -94,6 +94,16 @@ PSYCHOLOGY_TASKS = {
         "instructions": None,
         "purpose": "Motor coordination and learning/adaptation assessment",
         "target_population": "General population"
+    },
+    "9": {
+        "name": "BIRD - Basic",
+        "description": "Brief Implicit Relation Disorder (Basic Version)",
+        "directory": "BIRD_Basic",
+        "executable": "BIRD_Basic.exe",
+        "database": "BIRD_Basic.mdb",
+        "instructions": "BIRD_Basic Install Instructions.doc",
+        "purpose": "Measures implicit cognitive associations and processing speed",
+        "target_population": "General population"
     }
 }
 
@@ -101,7 +111,8 @@ PSYCHOLOGY_TASKS = {
 TASK_CATEGORIES = {
     "Auditory Processing": ["1", "2"],
     "Risk-Taking Assessment": ["3", "4", "5", "6", "7"],
-    "Motor Coordination": ["8"]
+    "Motor Coordination": ["8"],
+    "Cognitive Assessment": ["9"]
 }
 
 # System Requirements
