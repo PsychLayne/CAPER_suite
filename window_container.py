@@ -115,48 +115,19 @@ class WindowContainer:
             # Windows API functions
             user32 = ctypes.windll.user32
 
-            # Find the window by process ID
-            found_windows = []
+            # Search for ALL visible windows with a title, created around the same time
+            print("Searching all visible windows for VB6 form...")
+            all_visible_windows = []
 
-            def enum_windows_callback(hwnd, lParam):
-                """Callback to find windows by process ID"""
+            def enum_all_windows_callback(hwnd, lParam):
+                """Find all visible windows with titles"""
                 if user32.IsWindowVisible(hwnd):
-                    window_process_id = wintypes.DWORD()
-                    user32.GetWindowThreadProcessId(hwnd, ctypes.byref(window_process_id))
-                    if window_process_id.value == self.process.pid:
-                        # Get window title to make sure it's a real window
-                        length = user32.GetWindowTextLengthW(hwnd)
-                        if length > 0:
-                            found_windows.append(hwnd)
-                return True  # Continue enumeration
-
-            # Wait for window to be created with multiple attempts
-            print("Searching for task windows...")
-            max_attempts = 30
-            for attempt in range(max_attempts):
-                found_windows.clear()
-
-                # Enumerate windows
-                EnumWindowsProc = ctypes.WINFUNCTYPE(
-                    ctypes.c_bool,
-                    ctypes.POINTER(ctypes.c_int),
-                    ctypes.POINTER(ctypes.c_int)
-                )
-                user32.EnumWindows(EnumWindowsProc(enum_windows_callback), 0)
-
-                if found_windows:
-                    # Found window(s) for this process
-                    print(f"Found {len(found_windows)} window(s) for process {self.process.pid}")
-
-                    # Get details about each window
-                    for i, hwnd in enumerate(found_windows):
-                        # Get window title
-                        title_length = user32.GetWindowTextLengthW(hwnd)
-                        title = ""
-                        if title_length > 0:
-                            title_buffer = ctypes.create_unicode_buffer(title_length + 1)
-                            user32.GetWindowTextW(hwnd, title_buffer, title_length + 1)
-                            title = title_buffer.value
+                    title_length = user32.GetWindowTextLengthW(hwnd)
+                    if title_length > 0:
+                        # Get title
+                        title_buffer = ctypes.create_unicode_buffer(title_length + 1)
+                        user32.GetWindowTextW(hwnd, title_buffer, title_length + 1)
+                        title = title_buffer.value
 
                         # Get class name
                         class_buffer = ctypes.create_unicode_buffer(256)
@@ -169,180 +140,64 @@ class WindowContainer:
                         width = rect.right - rect.left
                         height = rect.bottom - rect.top
 
-                        print(f"  Window {i+1}: title='{title}', class='{class_name}', size={width}x{height}, pos=({rect.left},{rect.top})")
+                        # Only consider windows with actual size and VB6-related classes
+                        if width > 0 and height > 0 and ('Thunder' in class_name or 'BART' in title):
+                            all_visible_windows.append({
+                                'hwnd': hwnd,
+                                'title': title,
+                                'class': class_name,
+                                'width': width,
+                                'height': height,
+                                'left': rect.left,
+                                'top': rect.top
+                            })
+                return True
 
-                        # Prefer windows with actual size
-                        if width > 0 and height > 0:
-                            print(f"  → Using this window (has non-zero size)")
-                            self.hwnd = hwnd
-                            break
+            # Enumerate all windows
+            EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+            user32.EnumWindows(EnumWindowsProc(enum_all_windows_callback), 0)
 
-                    # If we didn't find a window with size, use the first one
-                    if not self.hwnd:
-                        self.hwnd = found_windows[0]
-                        print(f"  → Using first window (all had 0x0 size)")
+            # Show what we found
+            if all_visible_windows:
+                print(f"Found {len(all_visible_windows)} VB6/BART window(s):")
+                for i, win in enumerate(all_visible_windows):
+                    print(f"  {i+1}. '{win['title']}' ({win['class']}) - {win['width']}x{win['height']} at ({win['left']},{win['top']})")
 
-                    break
+                # Use the first one with matching title
+                for win in all_visible_windows:
+                    if self.task_name.replace(' - ', '_').replace(' ', '_') in win['title'] or 'BART' in win['title']:
+                        print(f"✓ Found matching window: '{win['title']}'")
+                        self.hwnd = win['hwnd']
 
-                time.sleep(0.1)
+                        # Get screen dimensions
+                        screen_width = user32.GetSystemMetrics(0)
+                        screen_height = user32.GetSystemMetrics(1)
 
-            if self.hwnd:
-                # Get screen dimensions
-                screen_width = user32.GetSystemMetrics(0)  # SM_CXSCREEN
-                screen_height = user32.GetSystemMetrics(1)  # SM_CYSCREEN
+                        # Calculate center position
+                        x = (screen_width - win['width']) // 2
+                        y = (screen_height - win['height']) // 2
 
-                print(f"Screen dimensions: {screen_width}x{screen_height}")
+                        print(f"Centering {win['width']}x{win['height']} window at ({x}, {y})")
 
-                # The window we found might be a parent/container. Check for child windows
-                print("Checking for child windows (VB6 forms are often child windows)...")
-                child_windows = []
+                        # Move window to center
+                        result = user32.SetWindowPos(
+                            self.hwnd, 0, x, y, 0, 0,
+                            0x0004 | 0x0001 | 0x0040  # NOZORDER | NOSIZE | SHOWWINDOW
+                        )
 
-                def enum_child_callback(hwnd, lParam):
-                    if user32.IsWindowVisible(hwnd):
-                        # Get class name to identify VB6 windows
-                        class_name = ctypes.create_unicode_buffer(256)
-                        user32.GetClassNameW(hwnd, class_name, 256)
+                        if result:
+                            print("✓ Window centered successfully!")
 
-                        # Get window rect
-                        rect = wintypes.RECT()
-                        user32.GetWindowRect(hwnd, ctypes.byref(rect))
-                        width = rect.right - rect.left
-                        height = rect.bottom - rect.top
+                        user32.SetForegroundWindow(self.hwnd)
+                        return
 
-                        child_windows.append({
-                            'hwnd': hwnd,
-                            'class': class_name.value,
-                            'width': width,
-                            'height': height
-                        })
-                        print(f"  Found child: class='{class_name.value}', size={width}x{height}")
-                    return True
-
-                EnumChildProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
-                user32.EnumChildWindows(self.hwnd, EnumChildProc(enum_child_callback), 0)
-
-                # If we found a child window with actual size, use that instead
-                for child in child_windows:
-                    if child['width'] > 0 and child['height'] > 0:
-                        print(f"✓ Using child window with size {child['width']}x{child['height']}")
-                        self.hwnd = child['hwnd']
-                        break
-
-                # Force window to show and update
-                SW_SHOW = 5
-                SW_RESTORE = 9
-                print("Forcing window to show...")
-                user32.ShowWindow(self.hwnd, SW_RESTORE)
-                user32.ShowWindow(self.hwnd, SW_SHOW)
-                user32.UpdateWindow(self.hwnd)
-                user32.SetForegroundWindow(self.hwnd)
-
-                # Give it a moment to actually render
-                time.sleep(0.5)
-
-                # Wait for the window to have a valid size (not 0x0)
-                print("Waiting for window to render...")
-                current_width = 0
-                current_height = 0
-                wait_attempts = 0
-                max_wait_attempts = 40  # 4 seconds
-
-                while (current_width == 0 or current_height == 0) and wait_attempts < max_wait_attempts:
-                    # Try GetWindowRect
-                    rect = wintypes.RECT()
-                    result = user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
-
-                    if result:
-                        current_width = rect.right - rect.left
-                        current_height = rect.bottom - rect.top
-
-                        # Also try GetClientRect (for VB6 forms this might give the actual size)
-                        client_rect = wintypes.RECT()
-                        user32.GetClientRect(self.hwnd, ctypes.byref(client_rect))
-                        client_width = client_rect.right - client_rect.left
-                        client_height = client_rect.bottom - client_rect.top
-
-                        print(f"  Attempt {wait_attempts + 1}: GetWindowRect={current_width}x{current_height}, GetClientRect={client_width}x{client_height}")
-
-                        # Use client rect if window rect is 0x0 but client rect has size
-                        if current_width == 0 and client_width > 0:
-                            print(f"  → Using client rect size instead")
-                            current_width = client_width
-                            current_height = client_height
-
-                        if current_width > 0 and current_height > 0:
-                            print(f"✓ Window rendered with size: {current_width}x{current_height}")
-                            break
-                    else:
-                        print(f"  Attempt {wait_attempts + 1}: GetWindowRect failed")
-
-                    wait_attempts += 1
-                    time.sleep(0.1)
-
-                if current_width == 0 or current_height == 0:
-                    print(f"⚠ Window size still 0x0 after {wait_attempts} attempts")
-                    print(f"  This VB6 program may use an unusual window initialization")
-                    print(f"  The window will appear at its default position")
-                    return
-
-                # Now position the window multiple times
-                # (VB6 apps sometimes reposition themselves during initialization)
-                for reposition_attempt in range(3):
-                    # Get the current window size (may have changed)
-                    rect = wintypes.RECT()
-                    user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
-                    current_width = rect.right - rect.left
-                    current_height = rect.bottom - rect.top
-
-                    # Calculate centered position
-                    x = (screen_width - current_width) // 2
-                    y = (screen_height - current_height) // 2
-
-                    print(f"Positioning attempt {reposition_attempt + 1}: centering {current_width}x{current_height} window at ({x}, {y})")
-
-                    # Position the window in the center
-                    SWP_NOZORDER = 0x0004
-                    SWP_NOSIZE = 0x0001
-                    SWP_SHOWWINDOW = 0x0040
-
-                    result = user32.SetWindowPos(
-                        self.hwnd,
-                        0,  # HWND_TOP
-                        x,
-                        y,
-                        0,  # Keep current width
-                        0,  # Keep current height
-                        SWP_NOZORDER | SWP_NOSIZE | SWP_SHOWWINDOW
-                    )
-
-                    if result:
-                        print(f"  ✓ SetWindowPos succeeded")
-                    else:
-                        error = ctypes.get_last_error()
-                        print(f"  ✗ SetWindowPos failed with error: {error}")
-
-                    # Bring window to foreground
-                    user32.SetForegroundWindow(self.hwnd)
-
-                    # Wait a bit before trying again
-                    if reposition_attempt < 2:
-                        time.sleep(0.4)
-
-                # Verify final position
-                rect = wintypes.RECT()
-                user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
-                final_x = rect.left
-                final_y = rect.top
-                print(f"✓ Window centering complete - final position: ({final_x}, {final_y})")
-
-            else:
-                print("⚠ Could not find task window - it may still be starting")
-                print("  Task will appear at its default position")
+            print("⚠ No matching VB6 form windows found")
+            print("  The VB6 program may use an unconventional window structure")
 
         except Exception as e:
-            # If positioning fails, the window will still run at its default position
-            print(f"⚠ Could not center window automatically: {e}")
-            print(f"  Task window opened at default position")
+            print(f"⚠ Error during window positioning: {e}")
+            import traceback
+            traceback.print_exc()
 
     def _launch_with_wine(self):
         """Launch with Wine on Linux/Mac"""
