@@ -94,7 +94,7 @@ echo Found Python: %PYTHON_CMD%
 echo.
 
 REM Check if psychology_client.py exists
-if not exist "%~dp0psychology_client.py" (
+if not exist "%~dp0src\psychology_client.py" (
     echo ERROR: psychology_client.py not found!
     echo Make sure you're running this script from the CAPER_suite directory
     echo.
@@ -105,7 +105,7 @@ if not exist "%~dp0psychology_client.py" (
 REM Launch the client
 echo Starting Psychology Client...
 echo.
-%PYTHON_CMD% "%~dp0psychology_client.py"
+%PYTHON_CMD% "%~dp0src\psychology_client.py"
 
 REM Check exit code
 if errorlevel 1 (

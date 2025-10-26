@@ -6,8 +6,10 @@ Defines all available psychology tasks and their properties
 import os
 from pathlib import Path
 
-# Base directory
-BASE_DIR = Path(__file__).parent.absolute()
+# Base directory - root of CAPER_suite
+BASE_DIR = Path(__file__).parent.parent.absolute()
+# Tasks directory
+TASKS_DIR = BASE_DIR / "tasks"
 
 # Available Psychology Tasks
 PSYCHOLOGY_TASKS = {
@@ -136,7 +138,7 @@ def get_task_path(task_id):
         return None
 
     task = PSYCHOLOGY_TASKS[task_id]
-    return BASE_DIR / task["directory"]
+    return TASKS_DIR / task["directory"]
 
 
 def get_executable_path(task_id):
@@ -145,7 +147,7 @@ def get_executable_path(task_id):
         return None
 
     task = PSYCHOLOGY_TASKS[task_id]
-    task_dir = BASE_DIR / task["directory"]
+    task_dir = TASKS_DIR / task["directory"]
     return task_dir / task["executable"]
 
 
@@ -158,7 +160,7 @@ def get_database_path(task_id):
     if task.get("database") is None:
         return None
 
-    task_dir = BASE_DIR / task["directory"]
+    task_dir = TASKS_DIR / task["directory"]
     return task_dir / task["database"]
 
 

@@ -30,15 +30,15 @@ REM Step 1: Install VB6 Runtime
 echo.
 echo [1/3] Installing VB6 Runtime SP6...
 echo ----------------------------------------------------------------------------
-if exist "vbrun60sp6.exe" (
-    echo Found VB6 Runtime installer: vbrun60sp6.exe
+if exist "installers\vbrun60sp6.exe" (
+    echo Found VB6 Runtime installer: installers\vbrun60sp6.exe
     echo.
     echo Running installer (this may take a minute)...
     echo Please click through any prompts that appear.
     echo.
 
     REM Run the installer
-    start /wait vbrun60sp6.exe
+    start /wait installers\vbrun60sp6.exe
 
     if %ERRORLEVEL% EQU 0 (
         echo.
@@ -49,8 +49,8 @@ if exist "vbrun60sp6.exe" (
         echo If you saw any errors, please run the installer manually.
     )
 ) else (
-    echo ERROR: vbrun60sp6.exe not found!
-    echo Please make sure it's in the same folder as this script.
+    echo ERROR: vbrun60sp6.exe not found in installers\ directory!
+    echo Please make sure the installers directory contains vbrun60sp6.exe
     pause
     exit /b 1
 )
@@ -173,7 +173,8 @@ echo.
 echo IMPORTANT: Please restart your computer before running tasks
 echo            for the first time (this ensures VB6 Runtime is properly loaded).
 echo.
-echo To launch the GUI, simply double-click: launch.bat
+echo To launch the GUI, simply double-click: run_gui.bat
+echo Or for the CLI version, double-click: run.bat
 echo.
 echo ============================================================================
 echo.

@@ -73,7 +73,7 @@ echo.
 echo NOTE: Screen will change to 1024x768 for optimal task display
 echo      Resolution will be restored when you close the GUI
 echo.
-%PYTHON_CMD% launch_gui_1024.py
+%PYTHON_CMD% src\launch_gui_1024.py
 
 REM If there was an error
 if %errorlevel% neq 0 (
