@@ -11,7 +11,6 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 import config
-from window_container import launch_task_in_container
 
 
 class TaskManager:
@@ -119,28 +118,41 @@ class TaskManager:
         self._backup_task_data(task_id)
 
         try:
-            # Launch task in fullscreen container
-            print(f"\n✓ Launching {task['name']} in fullscreen container...")
-            print(f"  Press ESC or click Close to exit when done.")
+            # Launch task normally
+            print(f"\n✓ Launching {task['name']}...")
 
-            success = launch_task_in_container(
-                task_name=task['name'],
-                exe_path=exe_path,
-                window_width=800,
-                window_height=600
-            )
+            if self.is_windows:
+                # Windows: Direct execution
+                process = subprocess.Popen([str(exe_path)], cwd=str(exe_path.parent))
 
-            if not success:
-                print(f"\n✗ Task failed to start!")
-                print(f"\nThis is likely caused by missing Visual Basic 6.0 runtime libraries.")
-                print(f"\nTo fix this:")
-                print(f"  1. Check dependencies: python scripts/check_vb6_dependencies.py")
-                print(f"  2. Install VB6 Runtime: Run vbrun60sp6.exe as Administrator")
-                print(f"\nSee TROUBLESHOOTING.md for detailed instructions.")
-                return False
+                # Give the process a moment to start
+                import time
+                time.sleep(0.5)
 
-            print(f"\n✓ Task completed!")
-            print(f"Data saved to: {exe_path.parent}")
+                # Check if process is still running
+                if process.poll() is not None:
+                    print(f"\n✗ Task failed to start!")
+                    print(f"\nThis is likely caused by missing Visual Basic 6.0 runtime libraries.")
+                    print(f"\nTo fix this:")
+                    print(f"  1. Check dependencies: python scripts/check_vb6_dependencies.py")
+                    print(f"  2. Install VB6 Runtime: Run vbrun60sp6.exe as Administrator")
+                    print(f"\nSee TROUBLESHOOTING.md for detailed instructions.")
+                    return False
+
+                print(f"\n✓ Task launched successfully!")
+                print(f"The task is now running in a separate window.")
+                print(f"Data will be saved to: {exe_path.parent}")
+            else:
+                # Linux/Mac: Use Wine
+                wine_path = shutil.which("wine")
+                if not wine_path:
+                    print("Error: Wine not found. Please install Wine to run Windows applications.")
+                    return False
+
+                subprocess.Popen([wine_path, str(exe_path)], cwd=str(exe_path.parent))
+                print(f"\n✓ Task launched successfully with Wine!")
+                print(f"The task is now running in a separate window.")
+                print(f"Data will be saved to: {exe_path.parent}")
 
             # Display post-run instructions
             print(f"\nNOTE: After completing the task:")
