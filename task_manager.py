@@ -119,8 +119,9 @@ class TaskManager:
         self._backup_task_data(task_id)
 
         try:
-            # Launch task - window will be automatically centered
-            print(f"\n✓ Launching {task['name']}...")
+            # Launch task in fullscreen container
+            print(f"\n✓ Launching {task['name']} in fullscreen container...")
+            print(f"  Press ESC or click Close to exit when done.")
 
             success = launch_task_in_container(
                 task_name=task['name'],
@@ -138,9 +139,8 @@ class TaskManager:
                 print(f"\nSee TROUBLESHOOTING.md for detailed instructions.")
                 return False
 
-            print(f"\n✓ Task launched successfully!")
-            print(f"The task window will appear centered on your screen.")
-            print(f"Data will be saved to: {exe_path.parent}")
+            print(f"\n✓ Task completed!")
+            print(f"Data saved to: {exe_path.parent}")
 
             # Display post-run instructions
             print(f"\nNOTE: After completing the task:")
